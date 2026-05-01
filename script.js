@@ -252,4 +252,173 @@ function renderStok() {
     tbody.innerHTML = filtered.map((item, idx) => {
         const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0);
         const status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman');
-        return `<tr><td>${item.n
+        return `<tr><td>${item.nama}</td><td>${item.stokAwal || 0}</td><td>${item.stokMasuk || 0}</td><td>${item.terjual || 0}</td><td>${sisa}</td><td>${status}</td><td><button onclick="hapusStok(${idx})" class="btn-delete">Hapus</button></td></tr>`;
+    }).join('');
+    const habis = stokData.filter(item => { const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0); return sisa <= 0; });
+    document.getElementById('habisBody').innerHTML = habis.length === 0 ? '<tr><td colspan="2" class="text-center">-</td></tr>' : habis.map(item => `<tr><td>${item.nama}</td><td>0</td></tr>`).join('');
+}
+
+window.hapusStok = function(index) {
+    if (confirm('Hapus produk ini?')) {
+        stokData.splice(index, 1);
+        localStorage.setItem('stokData', JSON.stringify(stokData));
+        renderStok();
+        renderDashboard();
+    }
+};
+
+function updateStokFromPenjualan() {
+    const productSold = {};
+    penjualanData.forEach(p => { productSold[p.produk] = (productSold[p.produk] || 0) + p.jumlah; });
+    stokData.forEach(item => { item.terjual = productSold[item.nama] || 0; });
+    localStorage.setItem('stokData', JSON.stringify(stokData));
+    renderStok();
+}
+
+// ========== KEUANGAN ==========
+let biayaOp = JSON.parse(localStorage.getItem('biayaOp')) || { iklan: 0, fee: 0, ongkir: 0, lain: 0 };
+
+function updateKeuangan() {
+    const totalOmzet = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
+    const totalBiaya = (biayaOp.iklan || 0) + (biayaOp.fee || 0) + (biayaOp.ongkir || 0) + (biayaOp.lain || 0);
+    const labaBersih = totalOmzet - totalBiaya;
+    document.getElementById('totalOmzetKeu')?.setAttribute('data-value', totalOmzet);
+    const keuanganCards = document.querySelectorAll('.kpi-card');
+    keuanganCards.forEach(card => {
+        const title = card.querySelector('h3')?.innerText;
+        if (title === 'Omzet') card.querySelector('.kpi-value').innerText = `Rp ${totalOmzet.toLocaleString()}`;
+        if (title === 'Biaya Operasional') card.querySelector('.kpi-value').innerText = `Rp ${totalBiaya.toLocaleString()}`;
+        if (title === 'Laba Bersih') card.querySelector('.kpi-value').innerText = `Rp ${labaBersih.toLocaleString()}`;
+    });
+}
+
+// ========== STRATEGI ==========
+function renderStrategi() {
+    const productSales = {};
+    penjualanData.forEach(p => { productSales[p.produk] = (productSales[p.produk] || 0) + p.jumlah; });
+    const top5 = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0,5);
+    const bottom5 = Object.entries(productSales).sort((a,b) => a[1] - b[1]).slice(0,5);
+    const topBody = document.getElementById('topProdukBody');
+    if (topBody) topBody.innerHTML = top5.length === 0 ? '<tr><td colspan="3">Belum ada data</td></tr>' : top5.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td><td>Rp 0</td></tr>`).join('');
+    const bottomBody = document.getElementById('bottomProdukBody');
+    if (bottomBody) bottomBody.innerHTML = bottom5.length === 0 ? '<tr><td colspan="3">Belum ada data</td></tr>' : bottom5.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td><td>Rp 0</td></tr>`).join('');
+    const rekomendasi = document.getElementById('rekomendasiList');
+    if (rekomendasi && top5.length > 0) rekomendasi.innerHTML = `<div class="rekomendasi-item">Fokus promosi: ${top5[0][0]} (produk terlaris)</div>${bottom5[0] ? `<div class="rekomendasi-item">Evaluasi: ${bottom5[0][0]} sepi order</div>` : ''}<div class="rekomendasi-item">Total ${penjualanData.length} transaksi tercatat</div>`;
+}
+
+// ========== MODAL & EVENT ==========
+if (document.getElementById('btnTambah')) {
+    const modal = document.getElementById('modalTambah');
+    const btn = document.getElementById('btnTambah');
+    const close = document.querySelector('.close');
+    btn.onclick = () => modal.style.display = 'block';
+    if (close) close.onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    document.getElementById('formPenjualan')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        penjualanData.push({
+            tanggal: document.getElementById('tgl').value,
+            marketplace: document.getElementById('mp').value,
+            produk: document.getElementById('produk').value,
+            jumlah: parseInt(document.getElementById('jumlah').value) || 0,
+            harga: parseInt(document.getElementById('harga').value) || 0,
+            status: document.getElementById('status').value
+        });
+        savePenjualan();
+        renderPenjualan();
+        renderDashboard();
+        updateStokFromPenjualan();
+        updateKeuangan();
+        renderStrategi();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Data tersimpan!');
+    });
+}
+
+if (document.getElementById('btnTambahStok')) {
+    const modal = document.getElementById('modalStok');
+    const btn = document.getElementById('btnTambahStok');
+    const close = document.querySelector('.close-stok');
+    btn.onclick = () => modal.style.display = 'block';
+    if (close) close.onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    document.getElementById('formStok')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        stokData.push({
+            nama: document.getElementById('namaProduk').value,
+            stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
+            stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
+            terjual: 0
+        });
+        localStorage.setItem('stokData', JSON.stringify(stokData));
+        renderStok();
+        renderDashboard();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Stok tersimpan!');
+    });
+}
+
+if (document.getElementById('formBiaya')) {
+    document.getElementById('formBiaya').addEventListener('submit', function(e) {
+        e.preventDefault();
+        biayaOp = {
+            iklan: parseInt(document.getElementById('biayaIklan').value) || 0,
+            fee: parseInt(document.getElementById('feeMarketplace').value) || 0,
+            ongkir: parseInt(document.getElementById('ongkir').value) || 0,
+            lain: parseInt(document.getElementById('lainLain').value) || 0
+        };
+        localStorage.setItem('biayaOp', JSON.stringify(biayaOp));
+        updateKeuangan();
+        alert('Biaya tersimpan!');
+    });
+}
+
+if (document.getElementById('simpanCatatan')) {
+    const saved = localStorage.getItem('catatanStrategi') || '';
+    if (document.getElementById('catatanStrategi')) document.getElementById('catatanStrategi').value = saved;
+    document.getElementById('simpanCatatan').addEventListener('click', () => {
+        const note = document.getElementById('catatanStrategi').value;
+        localStorage.setItem('catatanStrategi', note);
+        alert('Catatan tersimpan!');
+    });
+}
+
+if (document.getElementById('btnExport')) {
+    document.getElementById('btnExport').addEventListener('click', () => {
+        let csv = 'Tanggal,Marketplace,Produk,Jumlah,Harga,Total,Status\n';
+        penjualanData.forEach(p => csv += `${p.tanggal},${p.marketplace},${p.produk},${p.jumlah},${p.harga},${p.jumlah * p.harga},${p.status}\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `penjualan_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    });
+}
+
+if (document.getElementById('searchInput')) {
+    document.getElementById('searchInput')?.addEventListener('keyup', () => renderPenjualan());
+    document.getElementById('filterMarketplace')?.addEventListener('change', () => renderPenjualan());
+}
+if (document.getElementById('searchStok')) document.getElementById('searchStok')?.addEventListener('keyup', () => renderStok());
+
+// ========== LOGIN ==========
+if (document.getElementById('loginForm')) {
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        if (email === 'admin@cylla.store' && password === '123') {
+            localStorage.setItem('isLoggedIn', 'true');
+            window.location.href = 'dashboard.html';
+        } else alert('Email atau password salah!');
+    });
+}
+
+// ========== INIT ==========
+renderPenjualan();
+renderStok();
+renderDashboard();
+updateKeuangan();
+renderStrategi();
