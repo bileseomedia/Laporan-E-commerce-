@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Penjualan - Cylla.store</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>🛍️ Cylla.store</h2><p>PT PANCA AGUNG</p></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+                <a href="penjualan.html" class="nav-item active">📦 Data Penjualan</a>
+                <a href="stok.html" class="nav-item">📦 Manajemen Stok</a>
+                <a href="keuangan.html" class="nav-item">💰 Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item">💡 Strategi Bisnis</a>
+            </nav>
+            <div class="sidebar-footer"><span>👤 Admin</span><a href="login.html" class="logout">🚪 Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar"><h1>📦 Data Penjualan</h1><div class="date">Senin, 1 Januari 2026</div></header>
+
+            <!-- SEARCH & FILTER -->
+            <div class="filter-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Cari produk / marketplace..." class="search-input">
+                <select id="filterMarketplace" class="filter-select">
+                    <option value="">Semua Marketplace</option>
+                    <option value="Shopee">Shopee</option>
+                    <option value="Tokopedia">Tokopedia</option>
+                    <option value="TikTok Shop">TikTok Shop</option>
+                </select>
+                <button id="btnTambah" class="btn-primary">+ Tambah Data</button>
+                <button id="btnExport" class="btn-secondary">📄 Export Excel</button>
+            </div>
+
+            <!-- TABEL PENJUALAN -->
+            <div class="card">
+                <table class="data-table" id="penjualanTable">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th><th>Marketplace</th><th>Nama Produk</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Status</th><th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="penjualanBody">
+                        <tr><td colspan="8" class="text-center">Belum ada data. Klik "Tambah Data"</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL TAMBAH DATA -->
+    <div id="modalTambah" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>+ Tambah Penjualan</h3><span class="close">&times;</span></div>
+            <form id="formPenjualan">
+                <label>Tanggal:</label><input type="date" id="tgl" required>
+                <label>Marketplace:</label>
+                <select id="mp" required><option>Shopee</option><option>Tokopedia</option><option>TikTok Shop</option></select>
+                <label>Nama Produk:</label><input type="text" id="produk" required>
+                <label>Jumlah:</label><input type="number" id="jumlah" value="0" required>
+                <label>Harga (per item):</label><input type="number" id="harga" value="0" required>
+                <label>Status:</label>
+                <select id="status"><option>Selesai</option><option>Diproses</option><option>Dibatalkan</option></select>
+                <button type="submit" class="btn-primary">Simpan</button>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
