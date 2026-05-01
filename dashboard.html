@@ -22,124 +22,182 @@
                 <a href="strategi.html" class="nav-item">Strategi Bisnis</a>
             </nav>
             <div class="sidebar-footer">
-                <span>Admin</span>
-                <a href="login.html" class="logout">Logout</a>
+                <span>Administrator</span>
+                <a href="login.html" class="logout">Keluar</a>
             </div>
         </aside>
 
         <main class="main-content">
             <header class="top-bar">
-                <h1>Dashboard Monitoring</h1>
-                <div class="date" id="currentDate"></div>
+                <div>
+                    <h1>Ringkasan Bisnis</h1>
+                    <p class="subtitle">Laporan real-time semua marketplace</p>
+                </div>
+                <div class="date-badge" id="currentDate"></div>
             </header>
 
-            <!-- KPI Cards -->
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-icon">💰</div>
-                    <div class="kpi-info">
-                        <h3>Omzet Hari Ini</h3>
-                        <p class="kpi-value" id="omzetHariIni">Rp 0</p>
+            <!-- Stat Cards - Professional -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green-bg">💰</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Omzet Hari Ini</span>
+                        <span class="stat-value" id="omzetHariIni">Rp 0</span>
+                        <span class="stat-trend" id="trendHariIni">0% dari kemarin</span>
                     </div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon">📦</div>
-                    <div class="kpi-info">
-                        <h3>Total Order</h3>
-                        <p class="kpi-value" id="totalOrder">0</p>
+                <div class="stat-card">
+                    <div class="stat-icon blue-bg">📊</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Total Order</span>
+                        <span class="stat-value" id="totalOrder">0</span>
+                        <span class="stat-trend">seluruh waktu</span>
                     </div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon">✨</div>
-                    <div class="kpi-info">
-                        <h3>Produk Terjual</h3>
-                        <p class="kpi-value" id="produkTerjual">0</p>
+                <div class="stat-card">
+                    <div class="stat-icon purple-bg">📦</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Unit Terjual</span>
+                        <span class="stat-value" id="produkTerjual">0</span>
+                        <span class="stat-trend">produk terjual</span>
                     </div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon">🏪</div>
-                    <div class="kpi-info">
-                        <h3>Marketplace Aktif</h3>
-                        <p class="kpi-value">3</p>
+                <div class="stat-card">
+                    <div class="stat-icon orange-bg">🏪</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Marketplace Aktif</span>
+                        <span class="stat-value">3</span>
+                        <span class="stat-trend">Shopee · Tokopedia · TikTok</span>
                     </div>
                 </div>
             </div>
 
-            <!-- GRAFIK (BARU) -->
-            <div class="chart-row">
-                <div class="card chart-card">
-                    <h3>Tren Penjualan 7 Hari Terakhir</h3>
-                    <canvas id="salesChart" height="100"></canvas>
+            <!-- Charts Section -->
+            <div class="charts-wrapper">
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <h3>Tren Penjualan</h3>
+                        <span class="panel-sub">7 hari terakhir</span>
+                    </div>
+                    <canvas id="salesChart" height="120"></canvas>
                 </div>
-                <div class="card chart-card">
-                    <h3>Perbandingan Marketplace</h3>
-                    <canvas id="marketplaceChart" height="100"></canvas>
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <h3>Distribusi Omzet</h3>
+                        <span class="panel-sub">per marketplace</span>
+                    </div>
+                    <canvas id="marketplaceChart" height="120"></canvas>
                 </div>
             </div>
 
-            <!-- Perbandingan Periode -->
-            <div class="comparison-grid">
-                <div class="card">
-                    <h3>Perbandingan Omzet</h3>
-                    <div class="comparison-value">
-                        <div class="compare-item">
-                            <span class="compare-label">Hari Ini</span>
-                            <span class="compare-value" id="compHariIni">Rp 0</span>
+            <!-- Performance Comparison -->
+            <div class="comparison-panel">
+                <div class="comparison-item">
+                    <span class="comparison-label">Perbandingan Omzet</span>
+                    <div class="comparison-numbers">
+                        <div>
+                            <span class="small-label">Hari Ini</span>
+                            <span class="number" id="compHariIni">Rp 0</span>
                         </div>
-                        <div class="compare-vs">vs</div>
-                        <div class="compare-item">
-                            <span class="compare-label">Kemarin</span>
-                            <span class="compare-value" id="compKemarin">Rp 0</span>
+                        <div class="vs-divider">VS</div>
+                        <div>
+                            <span class="small-label">Kemarin</span>
+                            <span class="number" id="compKemarin">Rp 0</span>
                         </div>
                     </div>
-                    <div class="trend neutral" id="trendStatus">0%</div>
+                    <div class="trend-indicator" id="trendStatus">-</div>
                 </div>
-                <div class="card">
-                    <h3>Target Bulan Ini</h3>
-                    <div class="target-box">
-                        <div class="target-item">Target: <strong id="targetNilai">Rp 0</strong></div>
-                        <div class="target-item">Realisasi: <strong id="realisasiNilai">Rp 0</strong></div>
+                <div class="comparison-item">
+                    <span class="comparison-label">Target Bulanan</span>
+                    <div class="target-progress">
+                        <div class="target-labels">
+                            <span>Target: <strong id="targetNilai">Rp 0</strong></span>
+                            <span>Realisasi: <strong id="realisasiNilai">Rp 0</strong></span>
+                        </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                            <div class="progress-fill" id="progressFill"></div>
                         </div>
-                        <div class="target-percent" id="targetPercent">0% tercapai</div>
+                        <div class="target-percentage" id="targetPercent">0%</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ringkasan Marketplace -->
-            <div class="card">
-                <h3>Ringkasan per Marketplace</h3>
-                <table class="data-table">
+            <!-- Marketplace Table -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Ringkasan per Marketplace</h3>
+                    <span class="panel-sub">detail penjualan</span>
+                </div>
+                <table class="clean-table">
                     <thead>
-                        <tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Produk Terjual</th><th>Kontribusi</th></tr>
+                        <tr>
+                            <th>Marketplace</th>
+                            <th>Omzet</th>
+                            <th>Jumlah Order</th>
+                            <th>Unit Terjual</th>
+                            <th>Kontribusi</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Shopee</td><td id="mpShopeeOmzet">Rp 0</td><td id="mpShopeeOrder">0</td><td id="mpShopeeProduk">0</td><td id="mpShopeePersen">0%</td></tr>
-                        <tr><td>Tokopedia</td><td id="mpTokopediaOmzet">Rp 0</td><td id="mpTokopediaOrder">0</td><td id="mpTokopediaProduk">0</td><td id="mpTokopediaPersen">0%</td></tr>
-                        <tr><td>TikTok Shop</td><td id="mpTiktokOmzet">Rp 0</td><td id="mpTiktokOrder">0</td><td id="mpTiktokProduk">0</td><td id="mpTiktokPersen">0%</td></tr>
+                        <tr>
+                            <td class="marketplace-shopee">Shopee</td>
+                            <td id="mpShopeeOmzet">Rp 0</td>
+                            <td id="mpShopeeOrder">0</td>
+                            <td id="mpShopeeProduk">0</td>
+                            <td id="mpShopeePersen">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="marketplace-tokopedia">Tokopedia</td>
+                            <td id="mpTokopediaOmzet">Rp 0</td>
+                            <td id="mpTokopediaOrder">0</td>
+                            <td id="mpTokopediaProduk">0</td>
+                            <td id="mpTokopediaPersen">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="marketplace-tiktok">TikTok Shop</td>
+                            <td id="mpTiktokOmzet">Rp 0</td>
+                            <td id="mpTiktokOrder">0</td>
+                            <td id="mpTiktokProduk">0</td>
+                            <td id="mpTiktokPersen">0%</td>
+                        </tr>
                     </tbody>
                     <tfoot>
-                        <tr class="total-row"><td><strong>Total</strong></td><td id="totalOmzet"><strong>Rp 0</strong></td><td id="totalOrderCount"><strong>0</strong></td><td id="totalProdukCount"><strong>0</strong></td><td>100%</td></tr>
+                        <tr class="total-row">
+                            <td>Total</td>
+                            <td id="totalOmzet">Rp 0</td>
+                            <td id="totalOrderCount">0</td>
+                            <td id="totalProdukCount">0</td>
+                            <td>100%</td>
+                        </tr>
                     </tfoot>
                 </table>
             </div>
 
-            <!-- Top 5 Produk -->
-            <div class="card">
-                <h3>Produk Terlaris</h3>
-                <table class="data-table">
-                    <thead><tr><th>Peringkat</th><th>Nama Produk</th><th>Terjual</th><th>Omzet</th></tr></thead>
-                    <tbody id="topProdukList">
-                        <tr><td colspan="4" class="text-center">Belum ada data</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Alert Stok -->
-            <div class="card alert-card" id="alertStokCard">
-                <h3>Peringatan Stok Menipis</h3>
-                <div id="alertStokList">Tidak ada stok menipis</div>
+            <!-- Two Column Bottom -->
+            <div class="bottom-grid">
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h3>Produk Terlaris</h3>
+                        <span class="panel-sub">5 produk dengan omzet tertinggi</span>
+                    </div>
+                    <table class="clean-table">
+                        <thead>
+                            <tr><th>Nama Produk</th><th>Unit Terjual</th><th>Omzet</th></tr>
+                        </thead>
+                        <tbody id="topProdukList">
+                            <tr><td colspan="3" class="text-center">Belum ada data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="data-panel alert-panel">
+                    <div class="panel-header">
+                        <h3>Peringatan Stok</h3>
+                        <span class="panel-sub">produk dengan stok terbatas</span>
+                    </div>
+                    <div id="alertStokList" class="alert-list">
+                        <div class="empty-alert">Tidak ada peringatan stok</div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
