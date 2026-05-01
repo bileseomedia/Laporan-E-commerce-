@@ -5,54 +5,152 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Keuangan - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <div class="sidebar-header"><h2>🛍️ Cylla.store</h2><p>PT PANCA AGUNG</p></div>
+            <div class="sidebar-header">
+                <h2>Cylla.store</h2>
+                <p>PT PANCA AGUNG</p>
+            </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
-                <a href="penjualan.html" class="nav-item">📦 Data Penjualan</a>
-                <a href="stok.html" class="nav-item">📦 Manajemen Stok</a>
-                <a href="keuangan.html" class="nav-item active">💰 Laporan Keuangan</a>
-                <a href="strategi.html" class="nav-item">💡 Strategi Bisnis</a>
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="penjualan.html" class="nav-item">Data Penjualan</a>
+                <a href="stok.html" class="nav-item">Manajemen Stok</a>
+                <a href="keuangan.html" class="nav-item active">Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item">Strategi Bisnis</a>
             </nav>
-            <div class="sidebar-footer"><span>👤 Admin</span><a href="login.html" class="logout">🚪 Logout</a></div>
+            <div class="sidebar-footer">
+                <span>Administrator</span>
+                <a href="login.html" class="logout">Keluar</a>
+            </div>
         </aside>
 
         <main class="main-content">
-            <header class="top-bar"><h1>💰 Laporan Keuangan</h1><div class="date">Senin, 1 Januari 2026</div></header>
-
-            <div class="filter-bar">
-                <select id="periodeKeuangan">
-                    <option value="harian">📅 Harian</option>
-                    <option value="mingguan">📆 Mingguan</option>
-                    <option value="bulanan">📊 Bulanan</option>
-                </select>
-                <button id="refreshKeuangan" class="btn-primary">Tampilkan</button>
-            </div>
-
-            <div class="kpi-grid">
-                <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-info"><h3>Omzet</h3><p class="kpi-value">Rp 0</p></div></div>
-                <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-info"><h3>HPP Total</h3><p class="kpi-value">Rp 0</p></div></div>
-                <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-info"><h3>Laba Kotor</h3><p class="kpi-value">Rp 0</p></div></div>
-                <div class="kpi-card"><div class="kpi-icon">💸</div><div class="kpi-info"><h3>Biaya Operasional</h3><p class="kpi-value">Rp 0</p></div></div>
-                <div class="kpi-card"><div class="kpi-icon">🏆</div><div class="kpi-info"><h3>Laba Bersih</h3><p class="kpi-value">Rp 0</p></div></div>
-            </div>
-
-            <div class="two-columns">
-                <div class="card"><h3>📝 Biaya Operasional Bulanan</h3>
-                    <form id="formBiaya">
-                        <label>Biaya Iklan:</label><input type="number" id="biayaIklan" value="0"><br>
-                        <label>Fee Marketplace:</label><input type="number" id="feeMarketplace" value="0"><br>
-                        <label>Ongkir:</label><input type="number" id="ongkir" value="0"><br>
-                        <label>Lain-lain:</label><input type="number" id="lainLain" value="0"><br>
-                        <button type="submit" class="btn-primary">Update</button>
-                    </form>
+            <header class="top-bar">
+                <div>
+                    <h1>Laporan Keuangan</h1>
+                    <p class="subtitle">Ringkasan laba rugi dan biaya operasional</p>
                 </div>
-                <div class="card"><h3>📊 Rata-rata HPP per Produk</h3>
-                    <table class="data-table"><thead><tr><th>Produk</th><th>HPP</th><th>Harga Jual</th><th>Margin</th></tr></thead>
-                    <tbody id="hppBody"><tr><td colspan="4" class="text-center">Belum ada data</td></tr></tbody></table>
+                <div class="date-badge" id="currentDate"></div>
+            </header>
+
+            <!-- Profit & Loss Summary -->
+            <div class="profit-loss-grid">
+                <div class="pl-card">
+                    <div class="pl-label">Pendapatan Kotor</div>
+                    <div class="pl-value" id="totalOmzetKeu">Rp 0</div>
+                    <div class="pl-note">Total penjualan</div>
+                </div>
+                <div class="pl-card">
+                    <div class="pl-label">Biaya Operasional</div>
+                    <div class="pl-value" id="totalBiayaKeu">Rp 0</div>
+                    <div class="pl-note">Semua pengeluaran</div>
+                </div>
+                <div class="pl-card highlight">
+                    <div class="pl-label">Laba Bersih</div>
+                    <div class="pl-value" id="labaBersihKeu">Rp 0</div>
+                    <div class="pl-note">Pendapatan - Biaya</div>
+                </div>
+            </div>
+
+            <!-- Operational Expenses - Rapi -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Rincian Biaya Operasional</h3>
+                    <span class="panel-sub">Periode berjalan</span>
+                </div>
+                
+                <div class="expense-form">
+                    <div class="expense-row">
+                        <div class="expense-item">
+                            <label>Biaya Iklan</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="biayaIklan" class="expense-input" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="expense-item">
+                            <label>Fee Marketplace</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="feeMarketplace" class="expense-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="expense-row">
+                        <div class="expense-item">
+                            <label>Biaya Pengiriman</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="ongkir" class="expense-input" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="expense-item">
+                            <label>Biaya Lainnya</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="lainLain" class="expense-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="expense-actions">
+                        <button id="simpanBiaya" class="btn-save">Simpan Perubahan</button>
+                        <span class="save-hint">Data tersimpan otomatis</span>
+                    </div>
+                </div>
+
+                <div class="expense-summary">
+                    <div class="summary-row">
+                        <span>Total Biaya Iklan</span>
+                        <span id="summaryIklan">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Fee Marketplace</span>
+                        <span id="summaryFee">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Biaya Pengiriman</span>
+                        <span id="summaryOngkir">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Biaya Lainnya</span>
+                        <span id="summaryLain">Rp 0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Seluruh Biaya</span>
+                        <span id="summaryTotal">Rp 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Margin Chart -->
+            <div class="charts-wrapper">
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <h3>Visualisasi Laba</h3>
+                        <span class="panel-sub">Pendapatan vs Biaya</span>
+                    </div>
+                    <canvas id="profitChart" height="100"></canvas>
+                </div>
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <h3>Informasi Tambahan</h3>
+                        <span class="panel-sub">Rata-rata per transaksi</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Rata-rata nilai transaksi</span>
+                        <span class="info-value" id="avgTransaction">Rp 0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Margin laba bersih</span>
+                        <span class="info-value" id="marginProfit">0%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total transaksi</span>
+                        <span class="info-value" id="totalTransaksi">0</span>
+                    </div>
                 </div>
             </div>
         </main>
