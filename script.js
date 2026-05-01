@@ -416,6 +416,86 @@ if (document.getElementById('loginForm')) {
     });
 }
 
+// ========== KEUANGAN PAGE SPECIFIC ==========
+function renderKeuangan() {
+    const totalOmzet = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
+    const totalBiaya = (biayaOp.iklan || 0) + (biayaOp.fee || 0) + (biayaOp.ongkir || 0) + (biayaOp.lain || 0);
+    const labaBersih = totalOmzet - totalBiaya;
+    
+    const omzetEl = document.getElementById('totalOmzetKeu');
+    if (omzetEl) omzetEl.innerText = `Rp ${totalOmzet.toLocaleString()}`;
+    const biayaEl = document.getElementById('totalBiayaKeu');
+    if (biayaEl) biayaEl.innerText = `Rp ${totalBiaya.toLocaleString()}`;
+    const labaEl = document.getElementById('labaBersihKeu');
+    if (labaEl) labaEl.innerText = `Rp ${labaBersih.toLocaleString()}`;
+    
+    // Summary
+    document.getElementById('summaryIklan')?.innerText = `Rp ${(biayaOp.iklan || 0).toLocaleString()}`;
+    document.getElementById('summaryFee')?.innerText = `Rp ${(biayaOp.fee || 0).toLocaleString()}`;
+    document.getElementById('summaryOngkir')?.innerText = `Rp ${(biayaOp.ongkir || 0).toLocaleString()}`;
+    document.getElementById('summaryLain')?.innerText = `Rp ${(biayaOp.lain || 0).toLocaleString()}`;
+    document.getElementById('summaryTotal')?.innerText = `Rp ${totalBiaya.toLocaleString()}`;
+    
+    // Additional info
+    const totalTransaksi = penjualanData.length;
+    const avgTransaksi = totalTransaksi > 0 ? totalOmzet / totalTransaksi : 0;
+    document.getElementById('avgTransaction')?.innerText = `Rp ${avgTransaksi.toLocaleString()}`;
+    document.getElementById('marginProfit')?.innerText = totalOmzet > 0 ? `${((labaBersih / totalOmzet) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('totalTransaksi')?.innerText = totalTransaksi;
+    
+    // Profit Chart
+    updateProfitChart(totalOmzet, totalBiaya);
+}
+
+let profitChart = null;
+function updateProfitChart(omzet, biaya) {
+    const canvas = document.getElementById('profitChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (profitChart) profitChart.destroy();
+    profitChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pendapatan', 'Biaya', 'Laba Bersih'],
+            datasets: [{
+                data: [omzet, biaya, omzet - biaya],
+                backgroundColor: ['#1a1a2e', '#e03131', '#2e7d32'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// Load biaya operasional ke form
+if (document.getElementById('biayaIklan')) {
+    document.getElementById('biayaIklan').value = biayaOp.iklan || 0;
+    document.getElementById('feeMarketplace').value = biayaOp.fee || 0;
+    document.getElementById('ongkir').value = biayaOp.ongkir || 0;
+    document.getElementById('lainLain').value = biayaOp.lain || 0;
+    
+    document.getElementById('simpanBiaya').addEventListener('click', () => {
+        biayaOp = {
+            iklan: parseInt(document.getElementById('biayaIklan').value) || 0,
+            fee: parseInt(document.getElementById('feeMarketplace').value) || 0,
+            ongkir: parseInt(document.getElementById('ongkir').value) || 0,
+            lain: parseInt(document.getElementById('lainLain').value) || 0
+        };
+        localStorage.setItem('biayaOp', JSON.stringify(biayaOp));
+        renderKeuangan();
+        alert('Biaya operasional telah disimpan');
+    });
+}
+
+// Panggil renderKeuangan jika di halaman keuangan
+if (window.location.href.includes('keuangan.html')) {
+    renderKeuangan();
+}
+
 // ========== INIT ==========
 renderPenjualan();
 renderStok();
