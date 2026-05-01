@@ -18,12 +18,14 @@ if (!window.location.href.includes('login.html') && !window.location.href.includ
     }
 }
 
-// ========== TAMPILKAN TANGGAL ==========
-const dateEl = document.getElementById('currentDate');
-if (dateEl) {
-    const today = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    dateEl.innerText = today.toLocaleDateString('id-ID', options);
+// ========== TAMPILKAN TANGGAL (hanya jika bukan halaman login) ==========
+if (!window.location.href.includes('login.html')) {
+    const dateEl = document.getElementById('currentDate');
+    if (dateEl) {
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.innerText = today.toLocaleDateString('id-ID', options);
+    }
 }
 
 // ========== DATA PENYIMPANAN ==========
@@ -56,10 +58,15 @@ function getOmzetLast7Days() {
     return result;
 }
 
-// ========== APPLY VIEWER RESTRICTIONS ==========
+// ========== APPLY VIEWER RESTRICTIONS (HANYA JIKA SUDAH LOGIN & VIEWER) ==========
 function applyViewerRestrictions() {
+    // JANGAN TERAPKAN DI HALAMAN LOGIN!
+    if (window.location.href.includes('login.html')) return;
+    if (window.location.href.includes('index.html')) return;
+    
     if (!isViewer()) return;
     
+    // Sembunyikan tombol tambah/edit
     const allButtons = document.querySelectorAll('button');
     allButtons.forEach(btn => {
         const btnText = btn.innerText.toLowerCase();
@@ -72,6 +79,7 @@ function applyViewerRestrictions() {
         }
     });
     
+    // Disable input
     const allInputs = document.querySelectorAll('input, select, textarea');
     allInputs.forEach(input => {
         input.disabled = true;
@@ -79,6 +87,7 @@ function applyViewerRestrictions() {
         input.style.color = '#6c757d';
     });
     
+    // Tambah badge viewer
     if (!document.querySelector('.viewer-badge')) {
         const topBarTitle = document.querySelector('.top-bar h1');
         if (topBarTitle) {
@@ -91,9 +100,11 @@ function applyViewerRestrictions() {
     }
 }
 
-setTimeout(() => applyViewerRestrictions(), 100);
-setInterval(() => {
-    if (isViewer()) applyViewerRestrictions();
+// Jalankan restrictions hanya setelah halaman selesai loading (dan bukan halaman login)
+setTimeout(() => {
+    if (!window.location.href.includes('login.html')) {
+        applyViewerRestrictions();
+    }
 }, 500);
 
 // ========== RENDER DASHBOARD ==========
@@ -305,7 +316,6 @@ window.hapusPenjualan = function(index) {
         updateStokFromPenjualan();
         renderKeuangan();
         renderStrategiProfessional();
-        applyViewerRestrictions();
     }
 };
 
@@ -342,7 +352,6 @@ window.hapusStok = function(index) {
         saveStok();
         renderStok();
         renderDashboard();
-        applyViewerRestrictions();
     }
 };
 
@@ -476,7 +485,7 @@ function renderStrategiProfessional() {
 }
 
 // ========== MODAL TAMBAH DATA ==========
-if (document.getElementById('btnTambah')) {
+if (document.getElementById('btnTambah') && !window.location.href.includes('login.html')) {
     const modal = document.getElementById('modalTambah');
     const btn = document.getElementById('btnTambah');
     const close = document.querySelector('.close');
@@ -493,31 +502,33 @@ if (document.getElementById('btnTambah')) {
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     
-    document.getElementById('formPenjualan')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
-        penjualanData.push({
-            tanggal: document.getElementById('tgl').value,
-            marketplace: document.getElementById('mp').value,
-            produk: document.getElementById('produk').value,
-            jumlah: parseInt(document.getElementById('jumlah').value) || 0,
-            harga: parseInt(document.getElementById('harga').value) || 0,
-            status: document.getElementById('status').value
+    const formPenjualan = document.getElementById('formPenjualan');
+    if (formPenjualan) {
+        formPenjualan.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+            penjualanData.push({
+                tanggal: document.getElementById('tgl').value,
+                marketplace: document.getElementById('mp').value,
+                produk: document.getElementById('produk').value,
+                jumlah: parseInt(document.getElementById('jumlah').value) || 0,
+                harga: parseInt(document.getElementById('harga').value) || 0,
+                status: document.getElementById('status').value
+            });
+            savePenjualan();
+            renderPenjualan();
+            renderDashboard();
+            updateStokFromPenjualan();
+            renderKeuangan();
+            renderStrategiProfessional();
+            modal.style.display = 'none';
+            formPenjualan.reset();
+            alert('Data tersimpan!');
         });
-        savePenjualan();
-        renderPenjualan();
-        renderDashboard();
-        updateStokFromPenjualan();
-        renderKeuangan();
-        renderStrategiProfessional();
-        modal.style.display = 'none';
-        this.reset();
-        alert('Data tersimpan!');
-        applyViewerRestrictions();
-    });
+    }
 }
 
-if (document.getElementById('btnTambahStok')) {
+if (document.getElementById('btnTambahStok') && !window.location.href.includes('login.html')) {
     const modal = document.getElementById('modalStok');
     const btn = document.getElementById('btnTambahStok');
     const close = document.querySelector('.close-stok');
@@ -534,27 +545,29 @@ if (document.getElementById('btnTambahStok')) {
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     
-    document.getElementById('formStok')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
-        stokData.push({
-            nama: document.getElementById('namaProduk').value,
-            stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
-            stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
-            terjual: 0
+    const formStok = document.getElementById('formStok');
+    if (formStok) {
+        formStok.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+            stokData.push({
+                nama: document.getElementById('namaProduk').value,
+                stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
+                stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
+                terjual: 0
+            });
+            saveStok();
+            renderStok();
+            renderDashboard();
+            modal.style.display = 'none';
+            formStok.reset();
+            alert('Stok tersimpan!');
         });
-        saveStok();
-        renderStok();
-        renderDashboard();
-        modal.style.display = 'none';
-        this.reset();
-        alert('Stok tersimpan!');
-        applyViewerRestrictions();
-    });
+    }
 }
 
 // Biaya Operasional
-if (document.getElementById('biayaIklan')) {
+if (document.getElementById('biayaIklan') && !window.location.href.includes('login.html')) {
     document.getElementById('biayaIklan').value = biayaOp.iklan || 0;
     document.getElementById('feeMarketplace').value = biayaOp.fee || 0;
     document.getElementById('ongkir').value = biayaOp.ongkir || 0;
@@ -578,7 +591,7 @@ if (document.getElementById('biayaIklan')) {
 }
 
 // Action Plan
-if (document.getElementById('saveActionPlan')) {
+if (document.getElementById('saveActionPlan') && !window.location.href.includes('login.html')) {
     const saveActionPlan = document.getElementById('saveActionPlan');
     if (saveActionPlan) {
         saveActionPlan.addEventListener('click', () => {
@@ -593,15 +606,18 @@ if (document.getElementById('saveActionPlan')) {
 }
 
 // Search & Filter
-if (document.getElementById('searchInput')) {
-    document.getElementById('searchInput')?.addEventListener('keyup', () => renderPenjualan());
-    document.getElementById('filterMarketplace')?.addEventListener('change', () => renderPenjualan());
+if (document.getElementById('searchInput') && !window.location.href.includes('login.html')) {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('keyup', () => renderPenjualan());
+    const filterMarketplace = document.getElementById('filterMarketplace');
+    if (filterMarketplace) filterMarketplace.addEventListener('change', () => renderPenjualan());
 }
-if (document.getElementById('searchStok')) {
-    document.getElementById('searchStok')?.addEventListener('keyup', () => renderStok());
+if (document.getElementById('searchStok') && !window.location.href.includes('login.html')) {
+    const searchStok = document.getElementById('searchStok');
+    if (searchStok) searchStok.addEventListener('keyup', () => renderStok());
 }
 
-// ========== LOGIN SYSTEM ==========
+// ========== LOGIN SYSTEM (TIDAK TERGANGGU RESTRICTIONS) ==========
 if (document.getElementById('loginForm')) {
     const roleBtns = document.querySelectorAll('.role-btn');
     const adminInfo = document.getElementById('adminInfo');
@@ -630,33 +646,37 @@ if (document.getElementById('loginForm')) {
         });
     }
     
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        // LOGIN ADMIN
-        if (email === 'cylla@store' && password === 'cylla123') {
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', 'admin');
-            window.location.href = 'dashboard.html';
-        } 
-        // LOGIN VIEWER (BOS)
-        else if (email === 'agung@panca' && password === 'pancagung') {
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', 'viewer');
-            window.location.href = 'dashboard.html';
-        }
-        else {
-            alert('Email atau password salah!');
-        }
-    });
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // LOGIN ADMIN
+            if (email === 'cylla@store' && password === 'cylla123') {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', 'admin');
+                window.location.href = 'dashboard.html';
+            } 
+            // LOGIN VIEWER (BOS)
+            else if (email === 'agung@panca' && password === 'pancagung') {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', 'viewer');
+                window.location.href = 'dashboard.html';
+            }
+            else {
+                alert('Email atau password salah!');
+            }
+        });
+    }
 }
 
-// ========== INITIAL RENDER ==========
-renderPenjualan();
-renderStok();
-renderDashboard();
-renderKeuangan();
-renderStrategiProfessional();
-applyViewerRestrictions();
+// ========== INITIAL RENDER (JIKA BUKAN HALAMAN LOGIN) ==========
+if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
+    renderPenjualan();
+    renderStok();
+    renderDashboard();
+    renderKeuangan();
+    renderStrategiProfessional();
+}
