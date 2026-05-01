@@ -496,6 +496,189 @@ if (window.location.href.includes('keuangan.html')) {
     renderKeuangan();
 }
 
+// ========== STRATEGI PAGE - PROFESSIONAL VERSION ==========
+function renderStrategiProfessional() {
+    if (!window.location.href.includes('strategi.html')) return;
+    
+    // Hitung data
+    const totalOmzet = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
+    const totalUnit = penjualanData.reduce((sum, p) => sum + p.jumlah, 0);
+    
+    // Produk analysis
+    const productStats = {};
+    penjualanData.forEach(p => {
+        if (!productStats[p.produk]) {
+            productStats[p.produk] = { unit: 0, omzet: 0 };
+        }
+        productStats[p.produk].unit += p.jumlah;
+        productStats[p.produk].omzet += p.jumlah * p.harga;
+    });
+    
+    const productList = Object.entries(productStats).map(([name, data]) => ({
+        name, unit: data.unit, omzet: data.omzet, share: totalOmzet > 0 ? (data.omzet / totalOmzet) * 100 : 0
+    }));
+    productList.sort((a, b) => b.omzet - a.omzet);
+    
+    const top5 = productList.slice(0, 5);
+    const bottom5 = productList.slice(-5).reverse();
+    const topProduct = top5[0] || null;
+    const slowProduct = bottom5[0] || null;
+    
+    // Business Score
+    const uniqueProducts = productList.length;
+    const activeMarketplaces = new Set(penjualanData.map(p => p.marketplace)).size;
+    let score = 0;
+    if (totalOmzet > 0) score += 30;
+    if (uniqueProducts >= 3) score += 20;
+    else if (uniqueProducts >= 1) score += 10;
+    if (activeMarketplaces >= 2) score += 20;
+    else if (activeMarketplaces >= 1) score += 10;
+    if (topProduct && topProduct.share < 60) score += 15;
+    else if (topProduct) score += 5;
+    if (totalUnit >= 10) score += 15;
+    else if (totalUnit >= 1) score += 5;
+    
+    document.getElementById('businessScore').innerText = score;
+    const statusEl = document.getElementById('businessStatus');
+    if (score >= 70) { statusEl.innerText = 'Sehat'; statusEl.style.color = '#2e7d32'; }
+    else if (score >= 40) { statusEl.innerText = 'Perlu Perbaikan'; statusEl.style.color = '#e65100'; }
+    else { statusEl.innerText = 'Kritis'; statusEl.style.color = '#c62828'; }
+    
+    document.getElementById('topProduct').innerText = topProduct ? topProduct.name : '-';
+    document.getElementById('topProductShare').innerText = topProduct ? `${topProduct.share.toFixed(1)}% omzet` : '0% omzet';
+    document.getElementById('slowProduct').innerText = slowProduct ? slowProduct.name : '-';
+    document.getElementById('slowProductShare').innerText = slowProduct ? `${slowProduct.share.toFixed(1)}% omzet` : '0% omzet';
+    
+    // Top Products Table
+    const topTable = document.getElementById('topProductsTable');
+    if (topTable) {
+        if (top5.length === 0) topTable.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
+        else topTable.innerHTML = top5.map((p, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td class="product-name">${p.name}</td>
+                <td>${p.unit} unit</td>
+                <td>Rp ${p.omzet.toLocaleString()}</td>
+                <td><div class="share-bar"><div class="share-fill" style="width: ${p.share}%"></div><span>${p.share.toFixed(1)}%</span></div></td>
+            </tr>
+        `).join('');
+    }
+    
+    // Bottom Products Table
+    const bottomTable = document.getElementById('bottomProductsTable');
+    if (bottomTable) {
+        if (bottom5.length === 0 || bottom5[0].omzet === 0) bottomTable.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
+        else bottomTable.innerHTML = bottom5.map((p, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td class="product-name">${p.name}</td>
+                <td>${p.unit} unit</td>
+                <td>Rp ${p.omzet.toLocaleString()}</td>
+                <td>${p.share.toFixed(1)}%</td>
+            </tr>
+        `).join('');
+    }
+    
+    // Marketplace Analysis
+    const mpStats = { Shopee: { omzet: 0, order: 0 }, Tokopedia: { omzet: 0, order: 0 }, 'TikTok Shop': { omzet: 0, order: 0 } };
+    penjualanData.forEach(p => {
+        if (mpStats[p.marketplace]) {
+            mpStats[p.marketplace].omzet += p.jumlah * p.harga;
+            mpStats[p.marketplace].order++;
+        }
+    });
+    
+    const bestMp = Object.entries(mpStats).sort((a,b) => b[1].omzet - a[1].omzet)[0];
+    document.getElementById('shopeeOmzet').innerText = `Rp ${mpStats.Shopee.omzet.toLocaleString()}`;
+    document.getElementById('shopeeOrder').innerText = mpStats.Shopee.order;
+    document.getElementById('tokopediaOmzet').innerText = `Rp ${mpStats.Tokopedia.omzet.toLocaleString()}`;
+    document.getElementById('tokopediaOrder').innerText = mpStats.Tokopedia.order;
+    document.getElementById('tiktokOmzet').innerText = `Rp ${mpStats['TikTok Shop'].omzet.toLocaleString()}`;
+    document.getElementById('tiktokOrder').innerText = mpStats['TikTok Shop'].order;
+    
+    document.getElementById('shopeeRec').innerHTML = bestMp && bestMp[0] === 'Shopee' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    document.getElementById('tokopediaRec').innerHTML = bestMp && bestMp[0] === 'Tokopedia' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    document.getElementById('tiktokRec').innerHTML = bestMp && bestMp[0] === 'TikTok Shop' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    
+    // Recommendations
+    const recommendations = [];
+    if (topProduct && topProduct.share > 50) recommendations.push(`Produk "${topProduct.name}" mendominasi ${topProduct.share.toFixed(1)}% omzet. Fokus pada produk ini untuk maksimalkan profit.`);
+    else if (topProduct) recommendations.push(`Produk terlaris "${topProduct.name}" berkontribusi ${topProduct.share.toFixed(1)}% omzet. Kembangkan produk ini.`);
+    
+    if (slowProduct && slowProduct.omzet > 0 && slowProduct.share < 5) recommendations.push(`Produk "${slowProduct.name}" hanya berkontribusi ${slowProduct.share.toFixed(1)}% omzet. Evaluasi: diskon, bundling, atau stop jual.`);
+    
+    if (mpStats.Shopee.omzet === 0 && mpStats.Tokopedia.omzet === 0 && mpStats['TikTok Shop'].omzet === 0) {
+        recommendations.push('Belum ada data penjualan. Mulai input data transaksi Anda.');
+    } else {
+        const bestMpName = bestMp ? bestMp[0] : '';
+        if (bestMpName) recommendations.push(`Marketplace terbaik: ${bestMpName}. Alokasikan lebih banyak budget iklan ke sini.`);
+        
+        if (totalUnit < 10) recommendations.push('Volume penjualan masih rendah. Coba program diskon pembelian pertama atau bundling produk.');
+        if (uniqueProducts < 3) recommendations.push('Tambahan varian produk bisa membantu meningkatkan omzet.');
+    }
+    
+    if (recommendations.length === 0) recommendations.push('Terus pantau data penjualan untuk mendapatkan rekomendasi yang lebih akurat.');
+    
+    const recList = document.getElementById('recommendationList');
+    if (recList) recList.innerHTML = recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('');
+    
+    // Distribution Chart
+    const top5Total = top5.reduce((sum, p) => sum + p.omzet, 0);
+    const othersTotal = totalOmzet - top5Total;
+    updateDistributionChart(top5.map(p => p.name), top5.map(p => p.omzet), othersTotal);
+    
+    // Insights
+    document.getElementById('insight1').innerHTML = `<div class="insight-icon">📊</div><div class="insight-text">Total ${uniqueProducts} produk aktif</div>`;
+    document.getElementById('insight2').innerHTML = `<div class="insight-icon">🏪</div><div class="insight-text">Berjualan di ${activeMarketplaces} marketplace</div>`;
+    document.getElementById('insight3').innerHTML = `<div class="insight-icon">💰</div><div class="insight-text">Rata-rata nilai transaksi: Rp ${totalUnit > 0 ? Math.round(totalOmzet/totalUnit).toLocaleString() : '0'}</div>`;
+    
+    // Load saved action plan
+    const savedPlan = localStorage.getItem('actionPlan') || '';
+    const planTextarea = document.getElementById('actionPlan');
+    if (planTextarea) planTextarea.value = savedPlan;
+}
+
+let distChart = null;
+function updateDistributionChart(labels, values, othersTotal) {
+    const canvas = document.getElementById('distributionChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (distChart) distChart.destroy();
+    const allValues = [...values];
+    const allLabels = [...labels];
+    if (othersTotal > 0) {
+        allValues.push(othersTotal);
+        allLabels.push('Lainnya');
+    }
+    distChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: allLabels,
+            datasets: [{
+                data: allValues,
+                backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00', '#e03131', '#2e7d32', '#adb5bd'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+    });
+}
+
+// Save action plan
+if (document.getElementById('saveActionPlan')) {
+    document.getElementById('saveActionPlan').addEventListener('click', () => {
+        const plan = document.getElementById('actionPlan').value;
+        localStorage.setItem('actionPlan', plan);
+        const hint = document.getElementById('saveHint');
+        hint.innerText = 'Tersimpan!';
+        setTimeout(() => hint.innerText = '', 2000);
+    });
+}
+
 // ========== INIT ==========
 renderPenjualan();
 renderStok();
