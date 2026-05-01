@@ -10,21 +10,40 @@
     <div class="login-container">
         <div class="login-box">
             <div class="logo">
-                <h1>🛍️ Cylla.store</h1>
+                <h2>Cylla.store</h2>
                 <p>PT PANCA AGUNG</p>
             </div>
+            
+            <!-- Tab Login -->
+            <div class="login-tabs">
+                <button class="tab-btn active" data-tab="admin">Administrator</button>
+                <button class="tab-btn" data-tab="viewer">Atasan / Viewer</button>
+            </div>
+
             <form id="loginForm">
                 <div class="input-group">
-                    <label>📧 Email</label>
-                    <input type="email" id="email" placeholder="admin@cylla.store" required>
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="masukkan email" required>
                 </div>
                 <div class="input-group">
-                    <label>🔒 Password</label>
+                    <label>Password</label>
                     <input type="password" id="password" placeholder="******" required>
                 </div>
-                <button type="submit" class="btn-login">Login</button>
+                <button type="submit" class="btn-login">Masuk</button>
             </form>
-            <p class="info-login">Demo: admin@cylla.store / password: 123</p>
+
+            <div class="login-info">
+                <div id="adminInfo" class="info-box">
+                    <strong>👤 Admin (Akses Penuh)</strong><br>
+                    Email: @cylla.store<br>
+                    Password: cylla123
+                </div>
+                <div id="viewerInfo" class="info-box hidden">
+                    <strong>👀 Viewer (Hanya Lihat)</strong><br>
+                    Email: @agungpanca<br>
+                    Password: pancagung
+                </div>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
