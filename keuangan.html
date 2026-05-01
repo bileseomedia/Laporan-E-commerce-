@@ -23,98 +23,134 @@
             </nav>
             <div class="sidebar-footer">
                 <span>Administrator</span>
-                <a href="login.html" class="logout" onclick="localStorage.clear()">Keluar</a>
+                <a href="login.html" class="logout">Keluar</a>
             </div>
         </aside>
 
         <main class="main-content">
-            <div class="top-bar">
-                <h1>Laporan Keuangan</h1>
-                <div class="date" id="currentDate"></div>
-            </div>
+            <header class="top-bar">
+                <div>
+                    <h1>Laporan Keuangan</h1>
+                    <p class="subtitle">Ringkasan laba rugi dan biaya operasional</p>
+                </div>
+                <div class="date-badge" id="currentDate"></div>
+            </header>
 
-            <!-- KPI Cards - SAMA DENGAN DASHBOARD -->
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-icon">💰</div>
-                    <div class="kpi-info">
-                        <h3>Pendapatan Kotor</h3>
-                        <p class="kpi-value" id="totalOmzetKeu">Rp 0</p>
-                    </div>
+            <!-- Profit & Loss Summary -->
+            <div class="profit-loss-grid">
+                <div class="pl-card">
+                    <div class="pl-label">Pendapatan Kotor</div>
+                    <div class="pl-value" id="totalOmzetKeu">Rp 0</div>
+                    <div class="pl-note">Total penjualan</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon">📊</div>
-                    <div class="kpi-info">
-                        <h3>Biaya Operasional</h3>
-                        <p class="kpi-value" id="totalBiayaKeu">Rp 0</p>
-                    </div>
+                <div class="pl-card">
+                    <div class="pl-label">Biaya Operasional</div>
+                    <div class="pl-value" id="totalBiayaKeu">Rp 0</div>
+                    <div class="pl-note">Semua pengeluaran</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon">🎯</div>
-                    <div class="kpi-info">
-                        <h3>Laba Bersih</h3>
-                        <p class="kpi-value" id="labaBersihKeu">Rp 0</p>
-                    </div>
+                <div class="pl-card highlight">
+                    <div class="pl-label">Laba Bersih</div>
+                    <div class="pl-value" id="labaBersihKeu">Rp 0</div>
+                    <div class="pl-note">Pendapatan - Biaya</div>
                 </div>
             </div>
 
-            <!-- Biaya Operasional - SAMA DENGAN FILTER BAR DI PENJUALAN -->
-            <div class="card">
-                <h3>Rincian Biaya Operasional</h3>
-                <div class="filter-bar" style="flex-direction: column; gap: 15px;">
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Iklan</label>
-                            <input type="number" id="biayaIklan" class="search-input" placeholder="0">
+            <!-- Operational Expenses - Rapi -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Rincian Biaya Operasional</h3>
+                    <span class="panel-sub">Periode berjalan</span>
+                </div>
+                
+                <div class="expense-form">
+                    <div class="expense-row">
+                        <div class="expense-item">
+                            <label>Biaya Iklan</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="biayaIklan" class="expense-input" placeholder="0">
+                            </div>
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Fee Marketplace</label>
-                            <input type="number" id="feeMarketplace" class="search-input" placeholder="0">
+                        <div class="expense-item">
+                            <label>Fee Marketplace</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="feeMarketplace" class="expense-input" placeholder="0">
+                            </div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Pengiriman</label>
-                            <input type="number" id="ongkir" class="search-input" placeholder="0">
+                    <div class="expense-row">
+                        <div class="expense-item">
+                            <label>Biaya Pengiriman</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="ongkir" class="expense-input" placeholder="0">
+                            </div>
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Lainnya</label>
-                            <input type="number" id="lainLain" class="search-input" placeholder="0">
+                        <div class="expense-item">
+                            <label>Biaya Lainnya</label>
+                            <div class="expense-input-wrapper">
+                                <span class="currency">Rp</span>
+                                <input type="number" id="lainLain" class="expense-input" placeholder="0">
+                            </div>
                         </div>
                     </div>
-                    <button id="simpanBiaya" class="btn-primary" style="width: auto; align-self: flex-start;">Simpan Perubahan</button>
+                    <div class="expense-actions">
+                        <button id="simpanBiaya" class="btn-save">Simpan Perubahan</button>
+                        <span class="save-hint">Data tersimpan otomatis</span>
+                    </div>
+                </div>
+
+                <div class="expense-summary">
+                    <div class="summary-row">
+                        <span>Total Biaya Iklan</span>
+                        <span id="summaryIklan">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Fee Marketplace</span>
+                        <span id="summaryFee">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Biaya Pengiriman</span>
+                        <span id="summaryOngkir">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Biaya Lainnya</span>
+                        <span id="summaryLain">Rp 0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Seluruh Biaya</span>
+                        <span id="summaryTotal">Rp 0</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Ringkasan Biaya - SAMA DENGAN TABEL DI DASHBOARD -->
-            <div class="card">
-                <h3>Ringkasan Biaya</h3>
-                <table class="data-table">
-                    <tbody>
-                        <tr><td style="width: 70%;">Biaya Iklan</td><td id="summaryIklan">Rp 0</td></tr>
-                        <tr><td>Fee Marketplace</td><td id="summaryFee">Rp 0</td></tr>
-                        <tr><td>Biaya Pengiriman</td><td id="summaryOngkir">Rp 0</td></tr>
-                        <tr><td>Biaya Lainnya</td><td id="summaryLain">Rp 0</td></tr>
-                        <tr style="background: #f8f9fa; font-weight: bold;"><td>Total</td><td id="summaryTotal">Rp 0</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Grafik & Info - SAMA DENGAN TWO COLUMNS DI DASHBOARD -->
-            <div class="two-columns">
-                <div class="card">
-                    <h3>Visualisasi Laba</h3>
-                    <canvas id="profitChart" height="150"></canvas>
+            <!-- Margin Chart -->
+            <div class="charts-wrapper">
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <h3>Visualisasi Laba</h3>
+                        <span class="panel-sub">Pendapatan vs Biaya</span>
+                    </div>
+                    <canvas id="profitChart" height="100"></canvas>
                 </div>
-                <div class="card">
-                    <h3>Informasi Tambahan</h3>
-                    <table class="data-table">
-                        <tbody>
-                            <tr><td>Rata-rata nilai transaksi</td><td id="avgTransaction">Rp 0</td></tr>
-                            <tr><td>Margin laba bersih</td><td id="marginProfit">0%</td></tr>
-                            <tr><td>Total transaksi</td><td id="totalTransaksi">0</td></tr>
-                        </tbody>
-                    </table>
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <h3>Informasi Tambahan</h3>
+                        <span class="panel-sub">Rata-rata per transaksi</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Rata-rata nilai transaksi</span>
+                        <span class="info-value" id="avgTransaction">Rp 0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Margin laba bersih</span>
+                        <span class="info-value" id="marginProfit">0%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total transaksi</span>
+                        <span class="info-value" id="totalTransaksi">0</span>
+                    </div>
                 </div>
             </div>
         </main>
