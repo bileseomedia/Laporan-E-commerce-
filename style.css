@@ -1240,3 +1240,24 @@ textarea {
 .hidden {
     display: none;
 }
+
+/* Tambahan untuk tabel responsive */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Placeholder style lebih clean */
+.search-input::placeholder,
+.filter-select {
+    color: #adb5bd;
+}
+
+/* Modal form lebih rapi */
+.modal-content form label {
+    margin-top: 16px;
+    margin-bottom: 6px;
+}
+
+.modal-content form label:first-of-type {
+    margin-top: 0;
+}
