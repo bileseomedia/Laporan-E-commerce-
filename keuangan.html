@@ -23,7 +23,7 @@
             </nav>
             <div class="sidebar-footer">
                 <span>Administrator</span>
-                <a href="login.html" class="logout">Keluar</a>
+                <a href="login.html" class="logout" onclick="localStorage.clear()">Keluar</a>
             </div>
         </aside>
 
@@ -36,26 +36,35 @@
                 <div class="date-badge" id="currentDate"></div>
             </header>
 
-            <!-- Profit & Loss Summary -->
-            <div class="profit-loss-grid">
-                <div class="pl-card">
-                    <div class="pl-label">Pendapatan Kotor</div>
-                    <div class="pl-value" id="totalOmzetKeu">Rp 0</div>
-                    <div class="pl-note">Total penjualan</div>
+            <!-- 3 Kartu Utama -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue-bg">Rp</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Pendapatan Kotor</span>
+                        <span class="stat-value" id="totalOmzetKeu">Rp 0</span>
+                        <span class="stat-trend">Total penjualan</span>
+                    </div>
                 </div>
-                <div class="pl-card">
-                    <div class="pl-label">Biaya Operasional</div>
-                    <div class="pl-value" id="totalBiayaKeu">Rp 0</div>
-                    <div class="pl-note">Semua pengeluaran</div>
+                <div class="stat-card">
+                    <div class="stat-icon orange-bg">Biaya</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Biaya Operasional</span>
+                        <span class="stat-value" id="totalBiayaKeu">Rp 0</span>
+                        <span class="stat-trend">Semua pengeluaran</span>
+                    </div>
                 </div>
-                <div class="pl-card highlight">
-                    <div class="pl-label">Laba Bersih</div>
-                    <div class="pl-value" id="labaBersihKeu">Rp 0</div>
-                    <div class="pl-note">Pendapatan - Biaya</div>
+                <div class="stat-card">
+                    <div class="stat-icon green-bg">Laba</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Laba Bersih</span>
+                        <span class="stat-value" id="labaBersihKeu">Rp 0</span>
+                        <span class="stat-trend">Pendapatan - Biaya</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Operational Expenses - Rapi -->
+            <!-- Rincian Biaya Operasional -->
             <div class="data-panel">
                 <div class="panel-header">
                     <h3>Rincian Biaya Operasional</h3>
@@ -96,7 +105,7 @@
                         </div>
                     </div>
                     <div class="expense-actions">
-                        <button id="simpanBiaya" class="btn-save">Simpan Perubahan</button>
+                        <button id="simpanBiaya" class="btn-primary">Simpan Perubahan</button>
                         <span class="save-hint">Data tersimpan otomatis</span>
                     </div>
                 </div>
@@ -125,14 +134,14 @@
                 </div>
             </div>
 
-            <!-- Margin Chart -->
+            <!-- Grafik & Info Tambahan -->
             <div class="charts-wrapper">
                 <div class="chart-panel">
                     <div class="panel-header">
                         <h3>Visualisasi Laba</h3>
                         <span class="panel-sub">Pendapatan vs Biaya</span>
                     </div>
-                    <canvas id="profitChart" height="100"></canvas>
+                    <canvas id="profitChart" height="120"></canvas>
                 </div>
                 <div class="info-panel">
                     <div class="panel-header">
