@@ -5,48 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strategi Bisnis - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <div class="sidebar-header"><h2>🛍️ Cylla.store</h2><p>PT PANCA AGUNG</p></div>
+            <div class="sidebar-header">
+                <h2>Cylla.store</h2>
+                <p>PT PANCA AGUNG</p>
+            </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
-                <a href="penjualan.html" class="nav-item">📦 Data Penjualan</a>
-                <a href="stok.html" class="nav-item">📦 Manajemen Stok</a>
-                <a href="keuangan.html" class="nav-item">💰 Laporan Keuangan</a>
-                <a href="strategi.html" class="nav-item active">💡 Strategi Bisnis</a>
+                <a href="dashboard.html" class="nav-item">Dashboard</a>
+                <a href="penjualan.html" class="nav-item">Data Penjualan</a>
+                <a href="stok.html" class="nav-item">Manajemen Stok</a>
+                <a href="keuangan.html" class="nav-item">Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item active">Strategi Bisnis</a>
             </nav>
-            <div class="sidebar-footer"><span>👤 Admin</span><a href="login.html" class="logout">🚪 Logout</a></div>
+            <div class="sidebar-footer">
+                <span>Administrator</span>
+                <a href="login.html" class="logout">Keluar</a>
+            </div>
         </aside>
 
         <main class="main-content">
-            <header class="top-bar"><h1>💡 Strategi Bisnis</h1><div class="date">Senin, 1 Januari 2026</div></header>
-
-            <div class="two-columns">
-                <div class="card">
-                    <h3>🔥 Top 5 Produk Terlaris</h3>
-                    <table class="data-table"><thead><tr><th>Produk</th><th>Terjual</th><th>Omzet</th></tr></thead>
-                    <tbody id="topProdukBody"><tr><td colspan="3">Belum ada data</td></tr></tbody></table>
+            <header class="top-bar">
+                <div>
+                    <h1>Strategi Bisnis</h1>
+                    <p class="subtitle">Analisis performa & rekomendasi pengembangan</p>
                 </div>
-                <div class="card">
-                    <h3>🐢 Bottom 5 Produk Kurang Laris</h3>
-                    <table class="data-table"><thead><tr><th>Produk</th><th>Terjual</th><th>Omzet</th></tr></thead>
-                    <tbody id="bottomProdukBody"><tr><td colspan="3">Belum ada data</td></tr></tbody></table>
+                <div class="date-badge" id="currentDate"></div>
+            </header>
+
+            <!-- Performance Score Cards -->
+            <div class="score-grid">
+                <div class="score-card">
+                    <div class="score-label">Skor Kesehatan Bisnis</div>
+                    <div class="score-value" id="businessScore">-</div>
+                    <div class="score-status" id="businessStatus">-</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Produk Unggulan</div>
+                    <div class="score-value" id="topProduct">-</div>
+                    <div class="score-status" id="topProductShare">0% omzet</div>
+                </div>
+                <div class="score-card warning-bg">
+                    <div class="score-label">Perlu Perhatian</div>
+                    <div class="score-value" id="slowProduct">-</div>
+                    <div class="score-status" id="slowProductShare">0% omzet</div>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>💡 Rekomendasi Strategi</h3>
-                <div id="rekomendasiList" class="rekomendasi-list">
-                    <div class="rekomendasi-item">📊 Belum ada data penjualan untuk memberikan rekomendasi</div>
+            <!-- Two Column: Top Products & Bottom Products -->
+            <div class="products-grid">
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h3>Produk Terlaris</h3>
+                        <span class="panel-sub">Kontribusi omzet terbesar</span>
+                    </div>
+                    <table class="clean-table">
+                        <thead>
+                            <tr><th>Peringkat</th><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                        </thead>
+                        <tbody id="topProductsTable">
+                            <tr><td colspan="5" class="text-center">Belum ada data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h3>Produk Kurang Laris</h3>
+                        <span class="panel-sub">Omzet di bawah rata-rata</span>
+                    </div>
+                    <table class="clean-table">
+                        <thead>
+                            <tr><th>Peringkat</th><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                        </thead>
+                        <tbody id="bottomProductsTable">
+                            <tr><td colspan="5" class="text-center">Belum ada data</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>📝 Catatan Strategi</h3>
-                <textarea id="catatanStrategi" rows="4" placeholder="Tulis rencana strategi bisnis di sini..."></textarea>
-                <button id="simpanCatatan" class="btn-primary">Simpan Catatan</button>
+            <!-- Marketplace Analysis -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Analisis Marketplace</h3>
+                    <span class="panel-sub">Perbandingan performa antar platform</span>
+                </div>
+                <div class="marketplace-analysis">
+                    <div class="analysis-item" id="shopeeAnalysis">
+                        <div class="analysis-header">Shopee</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="shopeeOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="shopeeOrder">0</strong></span>
+                        </div>
+                        <div class="analysis-recommendation" id="shopeeRec">-</div>
+                    </div>
+                    <div class="analysis-item" id="tokopediaAnalysis">
+                        <div class="analysis-header">Tokopedia</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="tokopediaOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="tokopediaOrder">0</strong></span>
+                        </div>
+                        <div class="analysis-recommendation" id="tokopediaRec">-</div>
+                    </div>
+                    <div class="analysis-item" id="tiktokAnalysis">
+                        <div class="analysis-header">TikTok Shop</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="tiktokOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="tiktokOrder">0</strong></span>
+                        </div>
+                        <div class="analysis-recommendation" id="tiktokRec">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Recommendations -->
+            <div class="recommendation-panel">
+                <div class="panel-header">
+                    <h3>Rekomendasi Strategi</h3>
+                    <span class="panel-sub">Berdasarkan data penjualan terkini</span>
+                </div>
+                <div id="recommendationList" class="recommendation-list">
+                    <div class="loading-recommendation">Memproses data...</div>
+                </div>
+            </div>
+
+            <!-- Action Plan (Notes) -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Rencana Tindakan</h3>
+                    <span class="panel-sub">Catatan strategi & action plan</span>
+                </div>
+                <textarea id="actionPlan" class="action-plan-input" rows="4" placeholder="Tulis rencana strategi bisnis di sini...&#10;Contoh:&#10;- Fokus promosi produk A di Shopee&#10;- Diskon bundling untuk produk kurang laris&#10;- Tambah stok produk unggulan"></textarea>
+                <div class="action-actions">
+                    <button id="saveActionPlan" class="btn-save">Simpan Rencana</button>
+                    <span class="save-hint" id="saveHint"></span>
+                </div>
+            </div>
+
+            <!-- Strategy Chart -->
+            <div class="charts-wrapper">
+                <div class="chart-panel">
+                    <div class="panel-header">
+                        <h3>Distribusi Omzet per Produk</h3>
+                        <span class="panel-sub">Top 5 vs Lainnya</span>
+                    </div>
+                    <canvas id="distributionChart" height="100"></canvas>
+                </div>
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <h3>Insight Cepat</h3>
+                        <span class="panel-sub">Fakta dari data penjualan</span>
+                    </div>
+                    <div class="insight-item" id="insight1">
+                        <div class="insight-icon">📊</div>
+                        <div class="insight-text">Memuat data...</div>
+                    </div>
+                    <div class="insight-item" id="insight2">
+                        <div class="insight-icon">📦</div>
+                        <div class="insight-text">Memuat data...</div>
+                    </div>
+                    <div class="insight-item" id="insight3">
+                        <div class="insight-icon">💰</div>
+                        <div class="insight-text">Memuat data...</div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
