@@ -1261,3 +1261,38 @@ textarea {
 .modal-content form label:first-of-type {
     margin-top: 0;
 }
+
+/* Optimalisasi untuk HP kecil (max 480px) */
+@media (max-width: 480px) {
+    .top-bar h1 {
+        font-size: 20px;  /* Judul lebih kecil */
+    }
+    
+    .stat-value {
+        font-size: 20px;  /* Angka KPI lebih kecil */
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    .filter-bar {
+        flex-direction: column;
+    }
+    
+    .search-input, .filter-select, .btn-primary, .btn-secondary {
+        width: 100%;
+    }
+    
+    .clean-table th, .clean-table td {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+}
