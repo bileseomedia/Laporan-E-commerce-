@@ -56,54 +56,29 @@ function getOmzetLast7Days() {
     return result;
 }
 
-// ========== APPLY VIEWER RESTRICTIONS (VIEWER GA BISA EDIT SAMA SEKALI) ==========
+// ========== APPLY VIEWER RESTRICTIONS ==========
 function applyViewerRestrictions() {
     if (!isViewer()) return;
     
-    // 1. SEMBUNYIKAN SEMUA TOMBOL TAMBAH/EDIT
     const allButtons = document.querySelectorAll('button');
     allButtons.forEach(btn => {
         const btnText = btn.innerText.toLowerCase();
         const btnId = btn.id || '';
-        const btnClass = btn.className || '';
         
-        // Sembunyikan tombol yang berhubungan dengan edit/tambah/hapus/simpan
         if (btnText.includes('tambah') || btnText.includes('simpan') || btnText.includes('update') ||
             btnText.includes('hapus') || btnText.includes('delete') || btnText.includes('edit') ||
-            btnId.includes('Tambah') || btnId.includes('Simpan') || btnId.includes('Export') ||
-            btnClass.includes('btn-primary') || btnClass.includes('btn-save') || btnClass.includes('btn-delete')) {
+            btnId.includes('Tambah') || btnId.includes('Simpan') || btnId.includes('Export')) {
             btn.style.display = 'none';
         }
     });
     
-    // 2. SEMBUNYIKAN TOMBOL DI MODAL
-    const modalButtons = document.querySelectorAll('.modal-content button');
-    modalButtons.forEach(btn => btn.style.display = 'none');
-    
-    // 3. DISABLE semua input form
     const allInputs = document.querySelectorAll('input, select, textarea');
     allInputs.forEach(input => {
         input.disabled = true;
         input.style.backgroundColor = '#f8f9fa';
         input.style.color = '#6c757d';
-        input.style.cursor = 'not-allowed';
     });
     
-    // 4. SEMBUNYIKAN KOLOM AKSI DI TABEL
-    document.querySelectorAll('th:last-child, td:last-child').forEach(el => {
-        if (el.innerText === 'Aksi' || el.innerText === 'Hapus' || el.querySelector('button')) {
-            el.style.display = 'none';
-        }
-    });
-    
-    // 5. SEMBUNYIKAN SEMUA FORM
-    const allForms = document.querySelectorAll('form');
-    allForms.forEach(form => {
-        form.style.pointerEvents = 'none';
-        form.style.opacity = '0.7';
-    });
-    
-    // 6. TAMBAHKAN BADGE VIEWER DI HEADER
     if (!document.querySelector('.viewer-badge')) {
         const topBarTitle = document.querySelector('.top-bar h1');
         if (topBarTitle) {
@@ -114,16 +89,8 @@ function applyViewerRestrictions() {
             topBarTitle.parentElement.insertBefore(badge, topBarTitle.nextSibling);
         }
     }
-    
-    // 7. SEMBUNYIKAN TOMBOL EXPORT Excel (opsional, biar ga export data)
-    const exportBtn = document.getElementById('btnExport');
-    if (exportBtn) exportBtn.style.display = 'none';
-    
-    // 8. SEMBUNYIKAN TOMBOL DI SIDEBAR YANG BERHUBUNGAN DENGAN EDIT (tidak ada sih, tapi aman)
-    console.log('Viewer mode aktif - semua tombol edit telah disembunyikan');
 }
 
-// Panggil setiap halaman dimuat dan setiap ada perubahan DOM
 setTimeout(() => applyViewerRestrictions(), 100);
 setInterval(() => {
     if (isViewer()) applyViewerRestrictions();
@@ -136,11 +103,9 @@ function renderDashboard() {
     
     const todayOmzet = getOmzetByDate(today);
     const yesterdayOmzet = getOmzetByDate(yesterday);
-    const totalOmzetAll = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
     const totalOrder = penjualanData.length;
     const totalProdukTerjual = penjualanData.reduce((sum, p) => sum + p.jumlah, 0);
     
-    // Update KPI
     const omzetHariIniEl = document.getElementById('omzetHariIni');
     if (omzetHariIniEl) omzetHariIniEl.innerText = `Rp ${todayOmzet.toLocaleString()}`;
     const totalOrderEl = document.getElementById('totalOrder');
@@ -148,7 +113,6 @@ function renderDashboard() {
     const produkTerjualEl = document.getElementById('produkTerjual');
     if (produkTerjualEl) produkTerjualEl.innerText = totalProdukTerjual;
     
-    // Perbandingan
     const compHariIni = document.getElementById('compHariIni');
     if (compHariIni) compHariIni.innerText = `Rp ${todayOmzet.toLocaleString()}`;
     const compKemarin = document.getElementById('compKemarin');
@@ -170,7 +134,6 @@ function renderDashboard() {
         }
     }
     
-    // Target
     let realisasi = 0;
     const currentMonth = new Date().toISOString().slice(0,7);
     penjualanData.forEach(p => {
@@ -186,7 +149,6 @@ function renderDashboard() {
     const targetPercent = document.getElementById('targetPercent');
     if (targetPercent) targetPercent.innerText = `${percent.toFixed(1)}% tercapai`;
     
-    // Marketplace Summary
     const mp = { Shopee: { omzet: 0, order: 0, produk: 0 }, Tokopedia: { omzet: 0, order: 0, produk: 0 }, 'TikTok Shop': { omzet: 0, order: 0, produk: 0 } };
     penjualanData.forEach(p => {
         if (mp[p.marketplace]) {
@@ -231,7 +193,6 @@ function renderDashboard() {
     const totalProdukCount = document.getElementById('totalProdukCount');
     if (totalProdukCount) totalProdukCount.innerText = totalProdukTerjual;
     
-    // Top Products
     const productSales = {};
     penjualanData.forEach(p => { productSales[p.produk] = (productSales[p.produk] || 0) + (p.jumlah * p.harga); });
     const top5 = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0,5);
@@ -241,7 +202,6 @@ function renderDashboard() {
         else topList.innerHTML = top5.map(p => `<tr><td>${p[0]}</td><td>0</td><td>Rp ${p[1].toLocaleString()}</td></tr>`).join('');
     }
     
-    // Alert Stok
     const alertList = [];
     stokData.forEach(item => {
         const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0);
@@ -251,12 +211,10 @@ function renderDashboard() {
     const alertDiv = document.getElementById('alertStokList');
     if (alertDiv) alertDiv.innerHTML = alertList.length ? alertList.map(a => `<div class="alert-item">⚠️ ${a}</div>`).join('') : '<div class="empty-alert">Tidak ada peringatan stok</div>';
     
-    // Update Charts
     updateSalesChart();
     updateMarketplaceChart(mp, totalOmzetMp);
 }
 
-// ========== GRAFIK ==========
 let salesChart = null;
 function updateSalesChart() {
     const canvas = document.getElementById('salesChart');
@@ -318,7 +276,6 @@ function renderPenjualan() {
         return;
     }
     tbody.innerHTML = filtered.map((item, idx) => {
-        // Hanya admin yang bisa lihat tombol hapus, viewer GA BISA LIAT SAMA SEKALI
         const deleteButton = isAdmin() ? `<button onclick="hapusPenjualan(${penjualanData.indexOf(item)})" class="btn-delete">Hapus</button>` : '';
         return `
             <tr>
@@ -359,7 +316,7 @@ function renderStok() {
     const search = document.getElementById('searchStok')?.value.toLowerCase() || '';
     const filtered = stokData.filter(item => item.nama.toLowerCase().includes(search));
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada stok</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data stok</td></tr>';
         const habisBody = document.getElementById('habisBody');
         if (habisBody) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">-</td></tr>';
         return;
@@ -446,7 +403,7 @@ function updateProfitChart(omzet, biaya) {
     });
 }
 
-// ========== STRATEGI PROFESSIONAL ==========
+// ========== STRATEGI ==========
 function renderStrategiProfessional() {
     if (!window.location.href.includes('strategi.html')) return;
     
@@ -492,101 +449,33 @@ function renderStrategiProfessional() {
     
     const topProductEl = document.getElementById('topProduct');
     if (topProductEl) topProductEl.innerText = topProduct ? topProduct.name : '-';
-    const topProductShare = document.getElementById('topProductShare');
-    if (topProductShare) topProductShare.innerText = topProduct ? `${topProduct.share.toFixed(1)}% omzet` : '0% omzet';
     const slowProductEl = document.getElementById('slowProduct');
     if (slowProductEl) slowProductEl.innerText = slowProduct ? slowProduct.name : '-';
-    const slowProductShare = document.getElementById('slowProductShare');
-    if (slowProductShare) slowProductShare.innerText = slowProduct ? `${slowProduct.share.toFixed(1)}% omzet` : '0% omzet';
     
     const topTable = document.getElementById('topProductsTable');
     if (topTable) {
         if (top5.length === 0) topTable.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
-        else topTable.innerHTML = top5.map((p, i) => `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td><div class="share-bar"><div class="share-fill" style="width: ${p.share}%"></div><span>${p.share.toFixed(1)}%</span></div></td></tr>`).join('');
+        else topTable.innerHTML = top5.map((p, i) => `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td></tr>`).join('');
     }
-    
-    const bottomTable = document.getElementById('bottomProductsTable');
-    if (bottomTable) {
-        if (bottom5.length === 0 || bottom5[0].omzet === 0) bottomTable.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
-        else bottomTable.innerHTML = bottom5.map((p, i) => `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td></tr>`).join('');
-    }
-    
-    const mpStats = { Shopee: { omzet: 0, order: 0 }, Tokopedia: { omzet: 0, order: 0 }, 'TikTok Shop': { omzet: 0, order: 0 } };
-    penjualanData.forEach(p => { if (mpStats[p.marketplace]) { mpStats[p.marketplace].omzet += p.jumlah * p.harga; mpStats[p.marketplace].order++; } });
-    const bestMp = Object.entries(mpStats).sort((a,b) => b[1].omzet - a[1].omzet)[0];
-    
-    const shopeeOmzet = document.getElementById('shopeeOmzet');
-    if (shopeeOmzet) shopeeOmzet.innerText = `Rp ${mpStats.Shopee.omzet.toLocaleString()}`;
-    const shopeeOrder = document.getElementById('shopeeOrder');
-    if (shopeeOrder) shopeeOrder.innerText = mpStats.Shopee.order;
-    const tokopediaOmzet = document.getElementById('tokopediaOmzet');
-    if (tokopediaOmzet) tokopediaOmzet.innerText = `Rp ${mpStats.Tokopedia.omzet.toLocaleString()}`;
-    const tokopediaOrder = document.getElementById('tokopediaOrder');
-    if (tokopediaOrder) tokopediaOrder.innerText = mpStats.Tokopedia.order;
-    const tiktokOmzet = document.getElementById('tiktokOmzet');
-    if (tiktokOmzet) tiktokOmzet.innerText = `Rp ${mpStats['TikTok Shop'].omzet.toLocaleString()}`;
-    const tiktokOrder = document.getElementById('tiktokOrder');
-    if (tiktokOrder) tiktokOrder.innerText = mpStats['TikTok Shop'].order;
-    
-    const shopeeRec = document.getElementById('shopeeRec');
-    if (shopeeRec) shopeeRec.innerHTML = bestMp && bestMp[0] === 'Shopee' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
-    const tokopediaRec = document.getElementById('tokopediaRec');
-    if (tokopediaRec) tokopediaRec.innerHTML = bestMp && bestMp[0] === 'Tokopedia' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
-    const tiktokRec = document.getElementById('tiktokRec');
-    if (tiktokRec) tiktokRec.innerHTML = bestMp && bestMp[0] === 'TikTok Shop' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
     
     const recommendations = [];
-    if (topProduct && topProduct.share > 50) recommendations.push(`Produk "${topProduct.name}" mendominasi ${topProduct.share.toFixed(1)}% omzet. Fokus pada produk ini untuk maksimalkan profit.`);
-    else if (topProduct) recommendations.push(`Produk terlaris "${topProduct.name}" berkontribusi ${topProduct.share.toFixed(1)}% omzet. Kembangkan produk ini.`);
-    if (slowProduct && slowProduct.omzet > 0 && slowProduct.share < 5) recommendations.push(`Produk "${slowProduct.name}" hanya berkontribusi ${slowProduct.share.toFixed(1)}% omzet. Evaluasi: diskon, bundling, atau stop jual.`);
-    if (mpStats.Shopee.omzet === 0 && mpStats.Tokopedia.omzet === 0 && mpStats['TikTok Shop'].omzet === 0) recommendations.push('Belum ada data penjualan. Mulai input data transaksi Anda.');
-    else if (bestMp) recommendations.push(`Marketplace terbaik: ${bestMp[0]}. Alokasikan lebih banyak budget iklan ke sini.`);
-    if (totalUnit < 10) recommendations.push('Volume penjualan masih rendah. Coba program diskon pembelian pertama atau bundling produk.');
-    if (uniqueProducts < 3) recommendations.push('Tambahan varian produk bisa membantu meningkatkan omzet.');
-    if (recommendations.length === 0) recommendations.push('Terus pantau data penjualan untuk mendapatkan rekomendasi yang lebih akurat.');
+    if (topProduct && topProduct.share > 50) recommendations.push(`Produk "${topProduct.name}" mendominasi ${topProduct.share.toFixed(1)}% omzet. Fokus pada produk ini.`);
+    if (slowProduct && slowProduct.omzet > 0 && slowProduct.share < 5) recommendations.push(`Produk "${slowProduct.name}" hanya berkontribusi ${slowProduct.share.toFixed(1)}% omzet. Evaluasi produk ini.`);
+    if (totalUnit < 10) recommendations.push('Volume penjualan masih rendah. Coba program diskon atau bundling produk.');
+    if (recommendations.length === 0) recommendations.push('Terus pantau data penjualan untuk mendapatkan rekomendasi.');
     
     const recommendationList = document.getElementById('recommendationList');
     if (recommendationList) recommendationList.innerHTML = recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('');
     
-    const insight1 = document.getElementById('insight1');
-    if (insight1) insight1.innerHTML = `<div class="insight-icon">📊</div><div class="insight-text">Total ${uniqueProducts} produk aktif</div>`;
-    const insight2 = document.getElementById('insight2');
-    if (insight2) insight2.innerHTML = `<div class="insight-icon">🏪</div><div class="insight-text">Berjualan di ${activeMarketplaces} marketplace</div>`;
-    const insight3 = document.getElementById('insight3');
-    if (insight3) insight3.innerHTML = `<div class="insight-icon">💰</div><div class="insight-text">Rata-rata nilai transaksi: Rp ${totalUnit > 0 ? Math.round(totalOmzet/totalUnit).toLocaleString() : '0'}</div>`;
-    
-    updateDistributionChart(top5.map(p => p.name), top5.map(p => p.omzet), totalOmzet - top5.reduce((s, p) => s + p.omzet, 0));
-    
-    // Untuk viewer, textarea tetap bisa dilihat tapi tidak bisa diedit
     const savedPlan = localStorage.getItem('actionPlan') || '';
     const actionPlan = document.getElementById('actionPlan');
     if (actionPlan) {
         actionPlan.value = savedPlan;
-        if (isViewer()) {
-            actionPlan.disabled = true;
-            actionPlan.style.backgroundColor = '#f8f9fa';
-        }
+        if (isViewer()) actionPlan.disabled = true;
     }
 }
 
-let distChart = null;
-function updateDistributionChart(labels, values, othersTotal) {
-    const canvas = document.getElementById('distributionChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (distChart) distChart.destroy();
-    const allValues = [...values];
-    const allLabels = [...labels];
-    if (othersTotal > 0) { allValues.push(othersTotal); allLabels.push('Lainnya'); }
-    distChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: allLabels, datasets: [{ data: allValues, backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00', '#e03131', '#2e7d32', '#adb5bd'], borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
-    });
-}
-
-// ========== MODAL & EVENT HANDLER (KHUSUS ADMIN) ==========
-// Modal Tambah Penjualan - HANYA UNTUK ADMIN
+// ========== MODAL TAMBAH DATA ==========
 if (document.getElementById('btnTambah')) {
     const modal = document.getElementById('modalTambah');
     const btn = document.getElementById('btnTambah');
@@ -606,11 +495,7 @@ if (document.getElementById('btnTambah')) {
     
     document.getElementById('formPenjualan')?.addEventListener('submit', function(e) {
         e.preventDefault();
-        if (isViewer()) { 
-            alert('Anda dalam mode viewer, tidak dapat menambah data'); 
-            modal.style.display = 'none'; 
-            return; 
-        }
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
         penjualanData.push({
             tanggal: document.getElementById('tgl').value,
             marketplace: document.getElementById('mp').value,
@@ -632,7 +517,6 @@ if (document.getElementById('btnTambah')) {
     });
 }
 
-// Modal Tambah Stok - HANYA UNTUK ADMIN
 if (document.getElementById('btnTambahStok')) {
     const modal = document.getElementById('modalStok');
     const btn = document.getElementById('btnTambahStok');
@@ -652,11 +536,7 @@ if (document.getElementById('btnTambahStok')) {
     
     document.getElementById('formStok')?.addEventListener('submit', function(e) {
         e.preventDefault();
-        if (isViewer()) { 
-            alert('Anda dalam mode viewer, tidak dapat menambah data'); 
-            modal.style.display = 'none'; 
-            return; 
-        }
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
         stokData.push({
             nama: document.getElementById('namaProduk').value,
             stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
@@ -673,7 +553,7 @@ if (document.getElementById('btnTambahStok')) {
     });
 }
 
-// Biaya Operasional - HANYA UNTUK ADMIN
+// Biaya Operasional
 if (document.getElementById('biayaIklan')) {
     document.getElementById('biayaIklan').value = biayaOp.iklan || 0;
     document.getElementById('feeMarketplace').value = biayaOp.fee || 0;
@@ -683,10 +563,7 @@ if (document.getElementById('biayaIklan')) {
     const simpanBiaya = document.getElementById('simpanBiaya');
     if (simpanBiaya) {
         simpanBiaya.addEventListener('click', () => {
-            if (isViewer()) { 
-                alert('Mode viewer tidak dapat mengedit biaya'); 
-                return; 
-            }
+            if (isViewer()) { alert('Mode viewer tidak dapat mengedit biaya'); return; }
             biayaOp = {
                 iklan: parseInt(document.getElementById('biayaIklan').value) || 0,
                 fee: parseInt(document.getElementById('feeMarketplace').value) || 0,
@@ -698,80 +575,20 @@ if (document.getElementById('biayaIklan')) {
             alert('Biaya operasional telah disimpan');
         });
     }
-    
-    // Jika viewer, disable semua field biaya
-    if (isViewer()) {
-        document.getElementById('biayaIklan').disabled = true;
-        document.getElementById('feeMarketplace').disabled = true;
-        document.getElementById('ongkir').disabled = true;
-        document.getElementById('lainLain').disabled = true;
-        if (simpanBiaya) simpanBiaya.style.display = 'none';
-    }
 }
 
-// Simpan Catatan Strategi - HANYA UNTUK ADMIN
-if (document.getElementById('simpanCatatan')) {
-    const saved = localStorage.getItem('catatanStrategi') || '';
-    const catatanTextarea = document.getElementById('catatanStrategi');
-    if (catatanTextarea) {
-        catatanTextarea.value = saved;
-        if (isViewer()) {
-            catatanTextarea.disabled = true;
-            catatanTextarea.style.backgroundColor = '#f8f9fa';
-        }
-    }
-    
-    const simpanCatatan = document.getElementById('simpanCatatan');
-    if (simpanCatatan) {
-        simpanCatatan.addEventListener('click', () => {
-            if (isViewer()) { 
-                alert('Mode viewer tidak dapat mengedit catatan'); 
-                return; 
-            }
-            const note = document.getElementById('catatanStrategi').value;
-            localStorage.setItem('catatanStrategi', note);
-            alert('Catatan tersimpan!');
-        });
-        if (isViewer()) simpanCatatan.style.display = 'none';
-    }
-}
-
-// Action Plan - HANYA UNTUK ADMIN
+// Action Plan
 if (document.getElementById('saveActionPlan')) {
     const saveActionPlan = document.getElementById('saveActionPlan');
     if (saveActionPlan) {
         saveActionPlan.addEventListener('click', () => {
-            if (isViewer()) { 
-                alert('Mode viewer tidak dapat mengedit rencana'); 
-                return; 
-            }
+            if (isViewer()) { alert('Mode viewer tidak dapat mengedit rencana'); return; }
             const plan = document.getElementById('actionPlan').value;
             localStorage.setItem('actionPlan', plan);
             const hint = document.getElementById('saveHint');
             if (hint) { hint.innerText = 'Tersimpan!'; setTimeout(() => hint.innerText = '', 2000); }
         });
         if (isViewer()) saveActionPlan.style.display = 'none';
-    }
-}
-
-// Export Excel - HANYA UNTUK ADMIN
-if (document.getElementById('btnExport')) {
-    const exportBtn = document.getElementById('btnExport');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-            if (isViewer()) {
-                alert('Mode viewer tidak dapat mengekspor data');
-                return;
-            }
-            let csv = 'Tanggal,Marketplace,Produk,Jumlah,Harga,Total,Status\n';
-            penjualanData.forEach(p => csv += `${p.tanggal},${p.marketplace},${p.produk},${p.jumlah},${p.harga},${p.jumlah * p.harga},${p.status}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `penjualan_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-        });
-        if (isViewer()) exportBtn.style.display = 'none';
     }
 }
 
@@ -801,12 +618,12 @@ if (document.getElementById('loginForm')) {
                 if (role === 'admin') {
                     if (adminInfo) adminInfo.classList.remove('hidden');
                     if (viewerInfo) viewerInfo.classList.add('hidden');
-                    if (emailInput) emailInput.value = 'admin@cylla.store';
+                    if (emailInput) emailInput.value = 'cylla@store';
                     if (passwordInput) passwordInput.value = '';
                 } else {
                     if (adminInfo) adminInfo.classList.add('hidden');
                     if (viewerInfo) viewerInfo.classList.remove('hidden');
-                    if (emailInput) emailInput.value = 'agung@panCa.store';
+                    if (emailInput) emailInput.value = 'agung@panca';
                     if (passwordInput) passwordInput.value = '';
                 }
             });
@@ -818,13 +635,13 @@ if (document.getElementById('loginForm')) {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // LOGIN ADMIN - email: @cylla.store , password: cylla123
-        if (email === '@cylla.store' && password === 'cylla123') {
+        // LOGIN ADMIN
+        if (email === 'cylla@store' && password === 'cylla123') {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', 'admin');
             window.location.href = 'dashboard.html';
         } 
-        // LOGIN VIEWER (BOS) - email: agung@panca, password: pancagung
+        // LOGIN VIEWER (BOS)
         else if (email === 'agung@panca' && password === 'pancagung') {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', 'viewer');
