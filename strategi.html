@@ -61,14 +61,14 @@
                 <div class="card">
                     <h3>Produk Terlaris</h3>
                     <table class="data-table">
-                        <thead><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr></thead>
+                        <thead><tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr></thead>
                         <tbody id="topProductsTable"><tr><td colspan="4" class="text-center">Belum ada data</td></tr></tbody>
                     </table>
                 </div>
                 <div class="card">
                     <h3>Produk Kurang Laris</h3>
                     <table class="data-table">
-                        <thead><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr></thead>
+                        <thead><tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr></thead>
                         <tbody id="bottomProductsTable"><tr><td colspan="4" class="text-center">Belum ada data</td></tr></tbody>
                     </table>
                 </div>
@@ -77,11 +77,11 @@
             <div class="card">
                 <h3>Analisis Marketplace</h3>
                 <table class="data-table">
-                    <thead><tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Status</th></tr></thead>
+                    <thead><tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Rekomendasi</th></tr></thead>
                     <tbody>
-                        <tr><td>Shopee</td><td id="shopeeOmzet">Rp 0</td><td id="shopeeOrder">0</td><td id="shopeeRec">-</td></tr>
-                        <tr><td>Tokopedia</td><td id="tokopediaOmzet">Rp 0</td><td id="tokopediaOrder">0</td><td id="tokopediaRec">-</td></tr>
-                        <tr><td>TikTok Shop</td><td id="tiktokOmzet">Rp 0</td><td id="tiktokOrder">0</td><td id="tiktokRec">-</td></tr>
+                        <tr><td><strong>Shopee</strong></td><td id="shopeeOmzet">Rp 0</td><td id="shopeeOrder">0</td><td id="shopeeRec">-</td></tr>
+                        <tr><td><strong>Tokopedia</strong></td><td id="tokopediaOmzet">Rp 0</td><td id="tokopediaOrder">0</td><td id="tokopediaRec">-</td></tr>
+                        <tr><td><strong>TikTok Shop</strong></td><td id="tiktokOmzet">Rp 0</td><td id="tiktokOrder">0</td><td id="tiktokRec">-</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -93,14 +93,14 @@
 
             <div class="card">
                 <h3>Rencana Tindakan</h3>
-                <textarea id="actionPlan" rows="4" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-bottom:12px;"></textarea>
+                <textarea id="actionPlan" rows="4" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:12px; font-family:inherit;"></textarea>
                 <button id="saveActionPlan" class="btn-primary">Simpan Rencana</button>
             </div>
 
             <div class="two-columns">
                 <div class="card">
                     <h3>Distribusi Omzet</h3>
-                    <canvas id="distributionChart"></canvas>
+                    <canvas id="distributionChart" style="max-height: 200px; width: 100%;"></canvas>
                 </div>
                 <div class="card">
                     <h3>Insight Cepat</h3>
