@@ -59,57 +59,51 @@
 
             <div class="card">
                 <h3>Rincian Biaya Operasional</h3>
-                <div class="filter-bar" style="flex-direction: column; gap: 15px;">
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Iklan</label>
-                            <input type="number" id="biayaIklan" class="search-input" placeholder="0">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Fee Marketplace</label>
-                            <input type="number" id="feeMarketplace" class="search-input" placeholder="0">
-                        </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">Biaya Iklan</label>
+                        <input type="number" id="biayaIklan" class="search-input" placeholder="0">
                     </div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Pengiriman</label>
-                            <input type="number" id="ongkir" class="search-input" placeholder="0">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #666;">Biaya Lainnya</label>
-                            <input type="number" id="lainLain" class="search-input" placeholder="0">
-                        </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">Fee Marketplace</label>
+                        <input type="number" id="feeMarketplace" class="search-input" placeholder="0">
                     </div>
-                    <button id="simpanBiaya" class="btn-primary" style="width: auto; align-self: flex-start;">Simpan Perubahan</button>
                 </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">Biaya Pengiriman</label>
+                        <input type="number" id="ongkir" class="search-input" placeholder="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">Biaya Lainnya</label>
+                        <input type="number" id="lainLain" class="search-input" placeholder="0">
+                    </div>
+                </div>
+                <button id="simpanBiaya" class="btn-primary">Simpan Perubahan</button>
             </div>
 
             <div class="card">
                 <h3>Ringkasan Biaya</h3>
                 <table class="data-table">
-                    <tbody>
-                        <tr><td style="width: 70%;">Biaya Iklan</td><td id="summaryIklan">Rp 0</td></tr>
-                        <tr><td>Fee Marketplace</td><td id="summaryFee">Rp 0</td></tr>
-                        <tr><td>Biaya Pengiriman</td><td id="summaryOngkir">Rp 0</td></tr>
-                        <tr><td>Biaya Lainnya</td><td id="summaryLain">Rp 0</td></tr>
-                        <tr style="background: #f8f9fa; font-weight: bold;"><td>Total</td><td id="summaryTotal">Rp 0</td></tr>
-                    </tbody>
+                    <tr><td style="width: 70%;">Biaya Iklan</td><td id="summaryIklan">Rp 0</td></tr>
+                    <tr><td>Fee Marketplace</td><td id="summaryFee">Rp 0</td></tr>
+                    <tr><td>Biaya Pengiriman</td><td id="summaryOngkir">Rp 0</td></tr>
+                    <tr><td>Biaya Lainnya</td><td id="summaryLain">Rp 0</td></tr>
+                    <tr style="background:#f8f9fa;font-weight:bold;"><td>Total</td><td id="summaryTotal">Rp 0</td></tr>
                 </table>
             </div>
 
             <div class="two-columns">
                 <div class="card">
                     <h3>Visualisasi Laba</h3>
-                    <canvas id="profitChart" height="150"></canvas>
+                    <canvas id="profitChart"></canvas>
                 </div>
                 <div class="card">
                     <h3>Informasi Tambahan</h3>
                     <table class="data-table">
-                        <tbody>
-                            <tr><td>Rata-rata nilai transaksi</td><td id="avgTransaction">Rp 0</td></tr>
-                            <tr><td>Margin laba bersih</td><td id="marginProfit">0%</td></tr>
-                            <tr><td>Total transaksi</td><td id="totalTransaksi">0</td></tr>
-                        </tbody>
+                        <tr><td>Rata-rata nilai transaksi</td><td id="avgTransaction">Rp 0</td></tr>
+                        <tr><td>Margin laba bersih</td><td id="marginProfit">0%</td></tr>
+                        <tr><td>Total transaksi</td><td id="totalTransaksi">0</td></tr>
                     </table>
                 </div>
             </div>
