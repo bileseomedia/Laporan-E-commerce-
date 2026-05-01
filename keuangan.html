@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Keuangan - Cylla.store</title>
+    <title>Strategi Bisnis - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -18,8 +18,8 @@
                 <a href="dashboard.html" class="nav-item">Dashboard</a>
                 <a href="penjualan.html" class="nav-item">Data Penjualan</a>
                 <a href="stok.html" class="nav-item">Manajemen Stok</a>
-                <a href="keuangan.html" class="nav-item active">Laporan Keuangan</a>
-                <a href="strategi.html" class="nav-item">Strategi Bisnis</a>
+                <a href="keuangan.html" class="nav-item">Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item active">Strategi Bisnis</a>
             </nav>
             <div class="sidebar-footer">
                 <span>Administrator</span>
@@ -30,135 +30,159 @@
         <main class="main-content">
             <header class="top-bar">
                 <div>
-                    <h1>Laporan Keuangan</h1>
-                    <p class="subtitle">Ringkasan laba rugi dan biaya operasional</p>
+                    <h1>Strategi Bisnis</h1>
+                    <p class="subtitle">Analisis performa & rekomendasi pengembangan</p>
                 </div>
                 <div class="date-badge" id="currentDate"></div>
             </header>
 
-            <!-- 3 Kartu Utama -->
+            <!-- 3 Kartu Skor -->
             <div class="stat-grid">
                 <div class="stat-card">
-                    <div class="stat-icon blue-bg">Rp</div>
+                    <div class="stat-icon blue-bg">Skor</div>
                     <div class="stat-details">
-                        <span class="stat-label">Pendapatan Kotor</span>
-                        <span class="stat-value" id="totalOmzetKeu">Rp 0</span>
-                        <span class="stat-trend">Total penjualan</span>
+                        <span class="stat-label">Skor Kesehatan Bisnis</span>
+                        <span class="stat-value" id="businessScore">-</span>
+                        <span class="stat-trend" id="businessStatus">-</span>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon orange-bg">Biaya</div>
+                    <div class="stat-icon green-bg">Top</div>
                     <div class="stat-details">
-                        <span class="stat-label">Biaya Operasional</span>
-                        <span class="stat-value" id="totalBiayaKeu">Rp 0</span>
-                        <span class="stat-trend">Semua pengeluaran</span>
+                        <span class="stat-label">Produk Unggulan</span>
+                        <span class="stat-value" id="topProduct">-</span>
+                        <span class="stat-trend" id="topProductShare">0% omzet</span>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon green-bg">Laba</div>
+                    <div class="stat-icon orange-bg">Perlu</div>
                     <div class="stat-details">
-                        <span class="stat-label">Laba Bersih</span>
-                        <span class="stat-value" id="labaBersihKeu">Rp 0</span>
-                        <span class="stat-trend">Pendapatan - Biaya</span>
+                        <span class="stat-label">Perlu Perhatian</span>
+                        <span class="stat-value" id="slowProduct">-</span>
+                        <span class="stat-trend" id="slowProductShare">0% omzet</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Rincian Biaya Operasional -->
+            <!-- 2 Tabel: Top & Bottom Products -->
+            <div class="charts-wrapper">
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h3>Produk Terlaris</h3>
+                        <span class="panel-sub">Kontribusi omzet terbesar</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="clean-table">
+                            <thead>
+                                <tr><th>Peringkat</th><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                            </thead>
+                            <tbody id="topProductsTable">
+                                <tr><td colspan="5" class="text-center">Belum ada数据</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h3>Produk Kurang Laris</h3>
+                        <span class="panel-sub">Omzet di bawah rata-rata</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="clean-table">
+                            <thead>
+                                <tr><th>Peringkat</th><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                            </thead>
+                            <tbody id="bottomProductsTable">
+                                <tr><td colspan="5" class="text-center">Belum ada数据</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analisis Marketplace -->
             <div class="data-panel">
                 <div class="panel-header">
-                    <h3>Rincian Biaya Operasional</h3>
-                    <span class="panel-sub">Periode berjalan</span>
+                    <h3>Analisis Marketplace</h3>
+                    <span class="panel-sub">Perbandingan performa antar platform</span>
                 </div>
-                
-                <div class="expense-form">
-                    <div class="expense-row">
-                        <div class="expense-item">
-                            <label>Biaya Iklan</label>
-                            <div class="expense-input-wrapper">
-                                <span class="currency">Rp</span>
-                                <input type="number" id="biayaIklan" class="expense-input" placeholder="0">
-                            </div>
+                <div class="marketplace-analysis">
+                    <div class="analysis-item" id="shopeeAnalysis">
+                        <div class="analysis-header">Shopee</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="shopeeOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="shopeeOrder">0</strong></span>
                         </div>
-                        <div class="expense-item">
-                            <label>Fee Marketplace</label>
-                            <div class="expense-input-wrapper">
-                                <span class="currency">Rp</span>
-                                <input type="number" id="feeMarketplace" class="expense-input" placeholder="0">
-                            </div>
+                        <div class="analysis-recommendation" id="shopeeRec">-</div>
+                    </div>
+                    <div class="analysis-item" id="tokopediaAnalysis">
+                        <div class="analysis-header">Tokopedia</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="tokopediaOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="tokopediaOrder">0</strong></span>
                         </div>
+                        <div class="analysis-recommendation" id="tokopediaRec">-</div>
                     </div>
-                    <div class="expense-row">
-                        <div class="expense-item">
-                            <label>Biaya Pengiriman</label>
-                            <div class="expense-input-wrapper">
-                                <span class="currency">Rp</span>
-                                <input type="number" id="ongkir" class="expense-input" placeholder="0">
-                            </div>
+                    <div class="analysis-item" id="tiktokAnalysis">
+                        <div class="analysis-header">TikTok Shop</div>
+                        <div class="analysis-stats">
+                            <span>Omzet: <strong id="tiktokOmzet">Rp 0</strong></span>
+                            <span>Order: <strong id="tiktokOrder">0</strong></span>
                         </div>
-                        <div class="expense-item">
-                            <label>Biaya Lainnya</label>
-                            <div class="expense-input-wrapper">
-                                <span class="currency">Rp</span>
-                                <input type="number" id="lainLain" class="expense-input" placeholder="0">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="expense-actions">
-                        <button id="simpanBiaya" class="btn-primary">Simpan Perubahan</button>
-                        <span class="save-hint">Data tersimpan otomatis</span>
-                    </div>
-                </div>
-
-                <div class="expense-summary">
-                    <div class="summary-row">
-                        <span>Total Biaya Iklan</span>
-                        <span id="summaryIklan">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Fee Marketplace</span>
-                        <span id="summaryFee">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Biaya Pengiriman</span>
-                        <span id="summaryOngkir">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Biaya Lainnya</span>
-                        <span id="summaryLain">Rp 0</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total Seluruh Biaya</span>
-                        <span id="summaryTotal">Rp 0</span>
+                        <div class="analysis-recommendation" id="tiktokRec">-</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Grafik & Info Tambahan -->
+            <!-- Rekomendasi Strategi -->
+            <div class="recommendation-panel">
+                <div class="panel-header">
+                    <h3>Rekomendasi Strategi</h3>
+                    <span class="panel-sub">Berdasarkan data penjualan terkini</span>
+                </div>
+                <div id="recommendationList" class="recommendation-list">
+                    <div class="recommendation-item">Memproses data...</div>
+                </div>
+            </div>
+
+            <!-- Rencana Tindakan -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h3>Rencana Tindakan</h3>
+                    <span class="panel-sub">Catatan strategi & action plan</span>
+                </div>
+                <textarea id="actionPlan" rows="4" placeholder="Tulis rencana strategi bisnis di sini..."></textarea>
+                <div class="expense-actions" style="margin-top: 12px;">
+                    <button id="saveActionPlan" class="btn-primary">Simpan Rencana</button>
+                    <span class="save-hint" id="saveHint"></span>
+                </div>
+            </div>
+
+            <!-- Insight & Chart -->
             <div class="charts-wrapper">
                 <div class="chart-panel">
                     <div class="panel-header">
-                        <h3>Visualisasi Laba</h3>
-                        <span class="panel-sub">Pendapatan vs Biaya</span>
+                        <h3>Distribusi Omzet per Produk</h3>
+                        <span class="panel-sub">Top 5 vs Lainnya</span>
                     </div>
-                    <canvas id="profitChart" height="120"></canvas>
+                    <canvas id="distributionChart" height="120"></canvas>
                 </div>
                 <div class="info-panel">
                     <div class="panel-header">
-                        <h3>Informasi Tambahan</h3>
-                        <span class="panel-sub">Rata-rata per transaksi</span>
+                        <h3>Insight Cepat</h3>
+                        <span class="panel-sub">Fakta dari data penjualan</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total produk aktif</span>
+                        <span class="info-value" id="insight1">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Marketplace aktif</span>
+                        <span class="info-value" id="insight2">-</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Rata-rata nilai transaksi</span>
-                        <span class="info-value" id="avgTransaction">Rp 0</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Margin laba bersih</span>
-                        <span class="info-value" id="marginProfit">0%</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Total transaksi</span>
-                        <span class="info-value" id="totalTransaksi">0</span>
+                        <span class="info-value" id="insight3">-</span>
                     </div>
                 </div>
             </div>
