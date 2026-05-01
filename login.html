@@ -5,43 +5,225 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional login page specific styles */
+        .login-page {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 4px 0;
+        }
+
+        .login-logo p {
+            font-size: 12px;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .role-tabs {
+            display: flex;
+            gap: 8px;
+            background: #f1f3f5;
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 28px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: #6c757d;
+        }
+
+        .role-btn.active {
+            background: #1a1a2e;
+            color: white;
+            box-shadow: 0 2px 8px rgba(26, 26, 46, 0.2);
+        }
+
+        .input-field {
+            margin-bottom: 20px;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #1a1a2e;
+            box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px 20px;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .btn-login:hover {
+            background: #2d2d44;
+            transform: translateY(-1px);
+        }
+
+        .info-panel {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .info-card.hidden {
+            display: none;
+        }
+
+        .info-card strong {
+            color: #1a1a2e;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .info-card .badge {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .info-card.admin-badge .badge {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .info-card.viewer-badge .badge {
+            background: #f59f00;
+            color: white;
+        }
+
+        .credential-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-container">
-        <div class="login-box">
-            <div class="logo">
+        <div class="login-card">
+            <div class="login-logo">
                 <h2>Cylla.store</h2>
                 <p>PT PANCA AGUNG</p>
             </div>
-            
-            <!-- Tab Login -->
-            <div class="login-tabs">
-                <button class="tab-btn active" data-tab="admin">Administrator</button>
-                <button class="tab-btn" data-tab="viewer">Atasan / Viewer</button>
+
+            <div class="role-tabs">
+                <button class="role-btn active" data-role="admin">Administrator</button>
+                <button class="role-btn" data-role="viewer">Atasan / Viewer</button>
             </div>
 
             <form id="loginForm">
-                <div class="input-group">
+                <div class="input-field">
                     <label>Email</label>
-                    <input type="email" id="email" placeholder="masukkan email" required>
+                    <input type="email" id="email" placeholder="Tulis email" autocomplete="off">
                 </div>
-                <div class="input-group">
+                <div class="input-field">
                     <label>Password</label>
-                    <input type="password" id="password" placeholder="******" required>
+                    <input type="password" id="password" placeholder="******">
                 </div>
-                <button type="submit" class="btn-login">Masuk</button>
+                <button type="submit" class="btn-login">Masuk ke Dashboard</button>
             </form>
 
-            <div class="login-info">
-                <div id="adminInfo" class="info-box">
-                    <strong>👤 Admin (Akses Penuh)</strong><br>
-                    Email: @cylla.store<br>
-                    Password: cylla123
+            <div class="info-panel">
+                <div id="adminInfo" class="info-card admin-badge">
+                    <strong>🔐 Administrator (Akses Penuh)</strong>
+                    <div class="credential-row">
+                        <span>📧 @cylla.store</span>
+                        <span>🔑cylla123</span>
+                    </div>
+                    <div class="badge">Dapat menambah, mengedit, menghapus data</div>
                 </div>
-                <div id="viewerInfo" class="info-box hidden">
-                    <strong>👀 Viewer (Hanya Lihat)</strong><br>
-                    Email: @agungpanca<br>
-                    Password: pancagung
+                <div id="viewerInfo" class="info-card viewer-badge hidden">
+                    <strong>👁️ Viewer / Atasan (Hanya Lihat)</strong>
+                    <div class="credential-row">
+                        <span>📧 @agungpanca</span>
+                        <span>🔑 pancagung</span>
+                    </div>
+                    <div class="badge">Hanya dapat melihat laporan, tidak bisa mengedit</div>
                 </div>
             </div>
         </div>
