@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cylla.store</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🛍️ Cylla.store</h2>
+                <p>PT PANCA AGUNG</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
+                <a href="penjualan.html" class="nav-item">📦 Data Penjualan</a>
+                <a href="stok.html" class="nav-item">📦 Manajemen Stok</a>
+                <a href="keuangan.html" class="nav-item">💰 Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item">💡 Strategi Bisnis</a>
+            </nav>
+            <div class="sidebar-footer">
+                <span>👤 Admin</span>
+                <a href="login.html" class="logout">🚪 Logout</a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>📊 Dashboard Monitoring</h1>
+                <div class="date">Senin, 1 Januari 2026</div>
+            </header>
+
+            <!-- KPI CARDS -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-info">
+                        <h3>Omzet Hari Ini</h3>
+                        <p class="kpi-value">Rp 0</p>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">📦</div>
+                    <div class="kpi-info">
+                        <h3>Total Order</h3>
+                        <p class="kpi-value">0</p>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">✨</div>
+                    <div class="kpi-info">
+                        <h3>Produk Terjual</h3>
+                        <p class="kpi-value">0</p>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">🏪</div>
+                    <div class="kpi-info">
+                        <h3>Total Marketplace</h3>
+                        <p class="kpi-value">3</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERBANDINGAN PERIODE -->
+            <div class="comparison-grid">
+                <div class="card">
+                    <h3>📈 Hari Ini vs Kemarin</h3>
+                    <div class="comparison-value">
+                        <span class="today">Rp 0</span>
+                        <span class="vs">vs</span>
+                        <span class="yesterday">Rp 0</span>
+                    </div>
+                    <div class="trend neutral">0% 📊</div>
+                </div>
+                <div class="card">
+                    <h3>📊 Bulan Ini vs Bulan Lalu</h3>
+                    <div class="comparison-value">
+                        <span class="today">Rp 0</span>
+                        <span class="vs">vs</span>
+                        <span class="yesterday">Rp 0</span>
+                    </div>
+                    <div class="trend neutral">0% 📊</div>
+                </div>
+            </div>
+
+            <!-- RINGKASAN PER MARKETPLACE -->
+            <div class="card">
+                <h3>🏪 Ringkasan per Marketplace</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Produk Terjual</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>🟠 Shopee</td><td>Rp 0</td><td>0</td><td>0</td></tr>
+                        <tr><td>🟢 Tokopedia</td><td>Rp 0</td><td>0</td><td>0</td></tr>
+                        <tr><td>🔴 TikTok Shop</td><td>Rp 0</td><td>0</td><td>0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PRODUK TERLARIS & TARGET -->
+            <div class="two-columns">
+                <div class="card">
+                    <h3>🏆 Top 5 Produk Terlaris</h3>
+                    <table class="data-table">
+                        <thead><tr><th>Produk</th><th>Terjual</th><th>Omzet</th></tr></thead>
+                        <tbody>
+                            <tr><td>-</td><td>0</td><td>Rp 0</td></tr>
+                            <tr><td>-</td><td>0</td><td>Rp 0</td></tr>
+                            <tr><td>-</td><td>0</td><td>Rp 0</td></tr>
+                            <tr><td>-</td><td>0</td><td>Rp 0</td></tr>
+                            <tr><td>-</td><td>0</td><td>Rp 0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h3>🎯 Target vs Realisasi Bulan Ini</h3>
+                    <div class="target-box">
+                        <div class="target-item">Target: <strong>Rp 0</strong></div>
+                        <div class="target-item">Realisasi: <strong>Rp 0</strong></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:0%"></div>
+                        </div>
+                        <div class="target-percent">0% tercapai</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALERT STOK MENIPIS -->
+            <div class="card alert-card">
+                <h3>⚠️  Stok Menipis (Stok < 10)</h3>
+                <table class="data-table">
+                    <thead><tr><th>Produk</th><th>Sisa Stok</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td colspan="3" class="text-center">Belum ada data stok</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
