@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan - Cylla.store</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"><h2>🛍️ Cylla.store</h2><p>PT PANCA AGUNG</p></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+                <a href="penjualan.html" class="nav-item">📦 Data Penjualan</a>
+                <a href="stok.html" class="nav-item">📦 Manajemen Stok</a>
+                <a href="keuangan.html" class="nav-item active">💰 Laporan Keuangan</a>
+                <a href="strategi.html" class="nav-item">💡 Strategi Bisnis</a>
+            </nav>
+            <div class="sidebar-footer"><span>👤 Admin</span><a href="login.html" class="logout">🚪 Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar"><h1>💰 Laporan Keuangan</h1><div class="date">Senin, 1 Januari 2026</div></header>
+
+            <div class="filter-bar">
+                <select id="periodeKeuangan">
+                    <option value="harian">📅 Harian</option>
+                    <option value="mingguan">📆 Mingguan</option>
+                    <option value="bulanan">📊 Bulanan</option>
+                </select>
+                <button id="refreshKeuangan" class="btn-primary">Tampilkan</button>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-info"><h3>Omzet</h3><p class="kpi-value">Rp 0</p></div></div>
+                <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-info"><h3>HPP Total</h3><p class="kpi-value">Rp 0</p></div></div>
+                <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-info"><h3>Laba Kotor</h3><p class="kpi-value">Rp 0</p></div></div>
+                <div class="kpi-card"><div class="kpi-icon">💸</div><div class="kpi-info"><h3>Biaya Operasional</h3><p class="kpi-value">Rp 0</p></div></div>
+                <div class="kpi-card"><div class="kpi-icon">🏆</div><div class="kpi-info"><h3>Laba Bersih</h3><p class="kpi-value">Rp 0</p></div></div>
+            </div>
+
+            <div class="two-columns">
+                <div class="card"><h3>📝 Biaya Operasional Bulanan</h3>
+                    <form id="formBiaya">
+                        <label>Biaya Iklan:</label><input type="number" id="biayaIklan" value="0"><br>
+                        <label>Fee Marketplace:</label><input type="number" id="feeMarketplace" value="0"><br>
+                        <label>Ongkir:</label><input type="number" id="ongkir" value="0"><br>
+                        <label>Lain-lain:</label><input type="number" id="lainLain" value="0"><br>
+                        <button type="submit" class="btn-primary">Update</button>
+                    </form>
+                </div>
+                <div class="card"><h3>📊 Rata-rata HPP per Produk</h3>
+                    <table class="data-table"><thead><tr><th>Produk</th><th>HPP</th><th>Harga Jual</th><th>Margin</th></tr></thead>
+                    <tbody id="hppBody"><tr><td colspan="4" class="text-center">Belum ada data</td></tr></tbody></table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
