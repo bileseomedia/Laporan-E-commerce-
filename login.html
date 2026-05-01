@@ -38,6 +38,7 @@
             font-weight: 700;
             color: #1a1a2e;
             margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
         }
 
         .login-logo p {
@@ -142,11 +143,23 @@
             display: none;
         }
 
-        .info-card strong {
+        .info-card .role-title {
+            font-weight: 700;
             color: #1a1a2e;
             font-size: 13px;
-            display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .info-card .credential-box {
+            background: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 11px;
+            border: 1px solid #e9ecef;
         }
 
         .info-card .badge {
@@ -156,7 +169,7 @@
             border-radius: 20px;
             font-size: 10px;
             font-weight: 500;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .info-card.admin-badge .badge {
@@ -167,18 +180,6 @@
         .info-card.viewer-badge .badge {
             background: #f59f00;
             color: white;
-        }
-
-        .credential-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-family: monospace;
-            font-size: 11px;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
         }
     </style>
 </head>
@@ -192,7 +193,7 @@
 
             <div class="role-tabs">
                 <button class="role-btn active" data-role="admin">Administrator</button>
-                <button class="role-btn" data-role="viewer">Atasan / Viewer</button>
+                <button class="role-btn" data-role="viewer">Atasan</button>
             </div>
 
             <form id="loginForm">
@@ -202,7 +203,7 @@
                 </div>
                 <div class="input-field">
                     <label>Password</label>
-                    <input type="password" id="password" placeholder="******">
+                    <input type="password" id="password" placeholder="••••••••">
                 </div>
                 <button type="submit" class="btn-login">Masuk ke Dashboard</button>
             </form>
