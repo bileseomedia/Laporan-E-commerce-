@@ -801,12 +801,12 @@ if (document.getElementById('loginForm')) {
                 if (role === 'admin') {
                     if (adminInfo) adminInfo.classList.remove('hidden');
                     if (viewerInfo) viewerInfo.classList.add('hidden');
-                    if (emailInput) emailInput.value = '@cylla.store';
+                    if (emailInput) emailInput.value = 'admin@cylla.store';
                     if (passwordInput) passwordInput.value = '';
                 } else {
                     if (adminInfo) adminInfo.classList.add('hidden');
                     if (viewerInfo) viewerInfo.classList.remove('hidden');
-                    if (emailInput) emailInput.value = 'bos@cylla.store';
+                    if (emailInput) emailInput.value = 'agung@panCa.store';
                     if (passwordInput) passwordInput.value = '';
                 }
             });
@@ -818,12 +818,14 @@ if (document.getElementById('loginForm')) {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
+        // LOGIN ADMIN - email: @cylla.store , password: cylla123
         if (email === '@cylla.store' && password === 'cylla123') {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', 'admin');
             window.location.href = 'dashboard.html';
         } 
-        else if (email === '@agungpanca' && password === 'pancagung') {
+        // LOGIN VIEWER (BOS) - email: agung@panca, password: pancagung
+        else if (email === 'agung@panca' && password === 'pancagung') {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', 'viewer');
             window.location.href = 'dashboard.html';
