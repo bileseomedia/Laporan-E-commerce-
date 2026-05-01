@@ -33,89 +33,79 @@
                 <div class="date" id="currentDate"></div>
             </div>
 
-            <!-- Card 1: Skor Kesehatan -->
-            <div class="card">
-                <h3>Skor Kesehatan Bisnis</h3>
-                <div style="text-align: center; padding: 20px;">
-                    <span id="businessScore" style="font-size: 48px; font-weight: bold; color: #1a1a2e;">-</span>
-                    <p id="businessStatus" style="margin-top: 10px;">-</p>
+            <!-- KPI Cards - SAMA DENGAN DASHBOARD -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon">📈</div>
+                    <div class="kpi-info">
+                        <h3>Skor Kesehatan</h3>
+                        <p class="kpi-value" id="businessScore">-</p>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">⭐</div>
+                    <div class="kpi-info">
+                        <h3>Produk Unggulan</h3>
+                        <p class="kpi-value" id="topProduct">-</p>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">⚠️</div>
+                    <div class="kpi-info">
+                        <h3>Perlu Perhatian</h3>
+                        <p class="kpi-value" id="slowProduct">-</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Card 2: Produk Unggulan & Perhatian -->
-            <div class="card">
-                <table class="data-table">
-                    <tr>
-                        <td style="width: 50%;"><strong>Produk Unggulan</strong></td>
-                        <td id="topProduct">-</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Perlu Perhatian</strong></td>
-                        <td id="slowProduct">-</td>
-                    </tr>
-                </table>
+            <!-- Top & Bottom Products - SAMA DENGAN TABEL DI DASHBOARD -->
+            <div class="two-columns">
+                <div class="card">
+                    <h3>Produk Terlaris</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                        </thead>
+                        <tbody id="topProductsTable">
+                            <tr><td colspan="4" class="text-center">Belum ada数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h3>Produk Kurang Laris</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
+                        </thead>
+                        <tbody id="bottomProductsTable">
+                            <tr><td colspan="4" class="text-center">Belum ada数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Card 3: Top 5 Produk -->
-            <div class="card">
-                <h3>5 Produk Terlaris</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
-                    </thead>
-                    <tbody id="topProductsTable">
-                        <tr><td colspan="4" class="text-center">Belum ada数据</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Card 4: Bottom 5 Produk -->
-            <div class="card">
-                <h3>5 Produk Kurang Laris</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>Nama Produk</th><th>Terjual</th><th>Omzet</th><th>Kontribusi</th></tr>
-                    </thead>
-                    <tbody id="bottomProductsTable">
-                        <tr><td colspan="4" class="text-center">Belum ada数据</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Card 5: Analisis Marketplace -->
+            <!-- Analisis Marketplace - SAMA DENGAN TABEL BIASA -->
             <div class="card">
                 <h3>Analisis Marketplace</h3>
                 <table class="data-table">
-                    <tr>
-                        <td><strong>Shopee</strong></td>
-                        <td id="shopeeOmzet">Rp 0</td>
-                        <td id="shopeeOrder">0 order</td>
-                        <td id="shopeeRec" style="color: #2e7d32;">-</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Tokopedia</strong></td>
-                        <td id="tokopediaOmzet">Rp 0</td>
-                        <td id="tokopediaOrder">0 order</td>
-                        <td id="tokopediaRec" style="color: #2e7d32;">-</td>
-                    </tr>
-                    <tr>
-                        <td><strong>TikTok Shop</strong></td>
-                        <td id="tiktokOmzet">Rp 0</td>
-                        <td id="tiktokOrder">0 order</td>
-                        <td id="tiktokRec" style="color: #2e7d32;">-</td>
-                    </tr>
+                    <thead>
+                        <tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Rekomendasi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Shopee</strong></td><td id="shopeeOmzet">Rp 0</td><td id="shopeeOrder">0</td><td id="shopeeRec" style="color: #2e7d32;">-</td></tr>
+                        <tr><td><strong>Tokopedia</strong></td><td id="tokopediaOmzet">Rp 0</td><td id="tokopediaOrder">0</td><td id="tokopediaRec" style="color: #2e7d32;">-</td></tr>
+                        <tr><td><strong>TikTok Shop</strong></td><td id="tiktokOmzet">Rp 0</td><td id="tiktokOrder">0</td><td id="tiktokRec" style="color: #2e7d32;">-</td></tr>
+                    </tbody>
                 </table>
             </div>
 
-            <!-- Card 6: Rekomendasi -->
+            <!-- Rekomendasi Strategi -->
             <div class="card" style="background: #1a1a2e; color: white;">
                 <h3 style="color: white;">Rekomendasi Strategi</h3>
-                <div id="recommendationList" style="margin-top: 15px;">
-                    <p>Memproses data...</p>
-                </div>
+                <div id="recommendationList" style="margin-top: 15px;"></div>
             </div>
 
-            <!-- Card 7: Rencana Tindakan -->
+            <!-- Rencana Tindakan -->
             <div class="card">
                 <h3>Rencana Tindakan</h3>
                 <textarea id="actionPlan" rows="4" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 12px; font-family: inherit;"></textarea>
@@ -123,20 +113,22 @@
                 <span id="saveHint" style="margin-left: 12px; font-size: 12px; color: #6c757d;"></span>
             </div>
 
-            <!-- Card 8: Chart -->
-            <div class="card">
-                <h3>Distribusi Omzet per Produk</h3>
-                <canvas id="distributionChart" style="max-height: 200px; width: 100%;"></canvas>
-            </div>
-
-            <!-- Card 9: Insight -->
-            <div class="card">
-                <h3>Insight Cepat</h3>
-                <table class="data-table">
-                    <tr><td>Total produk aktif</td><td style="text-align: right;" id="insight1">-</td></tr>
-                    <tr><td>Marketplace aktif</td><td style="text-align: right;" id="insight2">-</td></tr>
-                    <tr><td>Rata-rata nilai transaksi</td><td style="text-align: right;" id="insight3">-</td></tr>
-                </table>
+            <!-- Chart & Insight -->
+            <div class="two-columns">
+                <div class="card">
+                    <h3>Distribusi Omzet</h3>
+                    <canvas id="distributionChart" height="150"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Insight Cepat</h3>
+                    <table class="data-table">
+                        <tbody>
+                            <tr><td>Total produk aktif</td><td id="insight1">-</td></tr>
+                            <tr><td>Marketplace aktif</td><td id="insight2">-</td></tr>
+                            <tr><td>Rata-rata nilai transaksi</td><td id="insight3">-</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
