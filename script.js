@@ -1,14 +1,3 @@
-// ========== KONFIGURASI SUPABASE ==========
-const SUPABASE_URL = "https://inwmobbmpmqnvsxtqdev.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlud21vYmJtcG1xbnZzeHRxZGV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NjQ1MzMsImV4cCI6MjA5MzU0MDUzM30.BIiavatJdfyR6HJqKEKUXps5eHP7zbaQK8_aHJho5T8";
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ========== DATA GLOBAL ==========
-let penjualanData = [];
-let stokData = [];
-let biayaData = [];
-
 // ========== CEK LOGIN & ROLE ==========
 function isLoggedIn() {
     return localStorage.getItem('isLoggedIn') === 'true';
@@ -26,88 +15,34 @@ function isViewer() {
 if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
     if (!isLoggedIn()) {
         window.location.href = 'login.html';
-    } else {
-        loadAllData();
     }
 }
 
 // ========== TAMPILKAN TANGGAL ==========
-function updateDate() {
-    const dateEl = document.getElementById('currentDate');
-    if (dateEl) {
-        const today = new Date();
-        dateEl.innerText = today.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
+const dateEl = document.getElementById('currentDate');
+if (dateEl) {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateEl.innerText = today.toLocaleDateString('id-ID', options);
 }
-updateDate();
 
-// ========== LOAD DATA DARI SUPABASE ==========
-async function loadAllData() {
-    console.log("Loading data...");
-    
-    try {
-        // Load penjualan
-        const { data: penjualan, error: err1 } = await supabase
-            .from('penjualan')
-            .select('*')
-            .order('tanggal', { ascending: false });
-        if (err1) console.error("Error penjualan:", err1);
-        else if (penjualan) {
-            penjualanData = penjualan;
-            console.log("Penjualan loaded:", penjualanData.length);
-        }
-        
-        // Load stok
-        const { data: stok, error: err2 } = await supabase
-            .from('stok')
-            .select('*')
-            .order('produk');
-        if (err2) console.error("Error stok:", err2);
-        else if (stok) {
-            stokData = stok;
-            console.log("Stok loaded:", stokData.length);
-        }
-        
-        // Load biaya
-        const { data: biaya, error: err3 } = await supabase
-            .from('biaya_operasional')
-            .select('*');
-        if (err3) console.error("Error biaya:", err3);
-        else if (biaya) {
-            biayaData = biaya;
-            console.log("Biaya loaded:", biayaData.length);
-        }
-        
-    } catch (error) {
-        console.error("Error:", error);
-    }
-    
-    // Refresh semua tampilan
-    renderDashboard();
-    renderPenjualan();
-    renderStok();
-    renderKeuangan();
-    renderStrategi();
-    applyViewerRestrictions();
-    
-    console.log("✅ All data loaded and rendered");
+// ========== DATA (localStorage) ==========
+let penjualanData = JSON.parse(localStorage.getItem('penjualanData')) || [];
+let stokData = JSON.parse(localStorage.getItem('stokData')) || [];
+let targetBulanan = JSON.parse(localStorage.getItem('targetBulanan')) || 10000000;
+let biayaOp = JSON.parse(localStorage.getItem('biayaOp')) || { iklan: 0, fee: 0, ongkir: 0, lain: 0 };
+
+function savePenjualan() {
+    localStorage.setItem('penjualanData', JSON.stringify(penjualanData));
+}
+
+function saveStok() {
+    localStorage.setItem('stokData', JSON.stringify(stokData));
 }
 
 // ========== FUNGSI BANTU ==========
-function getTotalOmzet() {
-    return penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga_jual), 0);
-}
-
-function getTotalBiaya() {
-    return biayaData.reduce((sum, b) => sum + b.nominal, 0);
-}
-
-function getLabaBersih() {
-    return getTotalOmzet() - getTotalBiaya();
-}
-
 function getOmzetByDate(date) {
-    return penjualanData.filter(p => p.tanggal === date).reduce((sum, p) => sum + (p.jumlah * p.harga_jual), 0);
+    return penjualanData.filter(p => p.tanggal === date).reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
 }
 
 function getOmzetLast7Days() {
@@ -121,82 +56,191 @@ function getOmzetLast7Days() {
     return result;
 }
 
+// ========== APPLY VIEWER RESTRICTIONS ==========
+function applyViewerRestrictions() {
+    if (!isViewer()) return;
+    
+    const allButtons = document.querySelectorAll('button');
+    allButtons.forEach(btn => {
+        const btnText = btn.innerText.toLowerCase();
+        const btnId = btn.id || '';
+        
+        if (btnText.includes('tambah') || btnText.includes('simpan') || btnText.includes('update') ||
+            btnText.includes('hapus') || btnText.includes('delete') || btnText.includes('edit') ||
+            btnId.includes('Tambah') || btnId.includes('Simpan') || btnId.includes('Export')) {
+            btn.style.display = 'none';
+        }
+    });
+    
+    const allInputs = document.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+        input.disabled = true;
+        input.style.backgroundColor = '#f8f9fa';
+        input.style.color = '#6c757d';
+    });
+    
+    if (!document.querySelector('.viewer-badge')) {
+        const topBarTitle = document.querySelector('.top-bar h1');
+        if (topBarTitle) {
+            const badge = document.createElement('span');
+            badge.className = 'viewer-badge';
+            badge.innerText = 'Mode Lihat (Tidak Dapat Mengedit)';
+            badge.style.cssText = 'background: #f59f00; color: white; font-size: 11px; padding: 4px 12px; border-radius: 40px; margin-left: 14px; font-weight: normal;';
+            topBarTitle.parentElement.insertBefore(badge, topBarTitle.nextSibling);
+        }
+    }
+}
+
+setTimeout(() => applyViewerRestrictions(), 100);
+setInterval(() => {
+    if (isViewer()) applyViewerRestrictions();
+}, 500);
+
 // ========== RENDER DASHBOARD ==========
 function renderDashboard() {
     const today = new Date().toISOString().split('T')[0];
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    
     const todayOmzet = getOmzetByDate(today);
     const yesterdayOmzet = getOmzetByDate(yesterday);
     const totalOrder = penjualanData.length;
     const totalProdukTerjual = penjualanData.reduce((sum, p) => sum + p.jumlah, 0);
     
-    const el = (id) => document.getElementById(id);
-    if (el('omzetHariIni')) el('omzetHariIni').innerText = `Rp ${todayOmzet.toLocaleString()}`;
-    if (el('totalOrder')) el('totalOrder').innerText = totalOrder;
-    if (el('produkTerjual')) el('produkTerjual').innerText = totalProdukTerjual;
-    if (el('compHariIni')) el('compHariIni').innerText = `Rp ${todayOmzet.toLocaleString()}`;
-    if (el('compKemarin')) el('compKemarin').innerText = `Rp ${yesterdayOmzet.toLocaleString()}`;
+    const omzetHariIniEl = document.getElementById('omzetHariIni');
+    if (omzetHariIniEl) omzetHariIniEl.innerText = `Rp ${todayOmzet.toLocaleString()}`;
+    const totalOrderEl = document.getElementById('totalOrder');
+    if (totalOrderEl) totalOrderEl.innerText = totalOrder;
+    const produkTerjualEl = document.getElementById('produkTerjual');
+    if (produkTerjualEl) produkTerjualEl.innerText = totalProdukTerjual;
     
-    let trend = yesterdayOmzet > 0 ? ((todayOmzet - yesterdayOmzet) / yesterdayOmzet) * 100 : 0;
-    if (el('trendStatus')) {
-        if (trend > 0) el('trendStatus').innerHTML = `+${trend.toFixed(1)}% ↑`;
-        else if (trend < 0) el('trendStatus').innerHTML = `${trend.toFixed(1)}% ↓`;
-        else el('trendStatus').innerHTML = '0% →';
+    const compHariIni = document.getElementById('compHariIni');
+    if (compHariIni) compHariIni.innerText = `Rp ${todayOmzet.toLocaleString()}`;
+    const compKemarin = document.getElementById('compKemarin');
+    if (compKemarin) compKemarin.innerText = `Rp ${yesterdayOmzet.toLocaleString()}`;
+    
+    let trendPercent = 0;
+    if (yesterdayOmzet > 0) trendPercent = ((todayOmzet - yesterdayOmzet) / yesterdayOmzet) * 100;
+    const trendEl = document.getElementById('trendStatus');
+    if (trendEl) {
+        if (trendPercent > 0) {
+            trendEl.innerHTML = `+${trendPercent.toFixed(1)}% ↑`;
+            trendEl.className = 'trend-indicator trend-up';
+        } else if (trendPercent < 0) {
+            trendEl.innerHTML = `${trendPercent.toFixed(1)}% ↓`;
+            trendEl.className = 'trend-indicator trend-down';
+        } else {
+            trendEl.innerHTML = '0% →';
+            trendEl.className = 'trend-indicator trend-neutral';
+        }
     }
     
-    let realisasi = getTotalOmzet();
-    let targetOmzet = 10000000;
-    if (el('targetNilai')) el('targetNilai').innerText = `Rp ${targetOmzet.toLocaleString()}`;
-    if (el('realisasiNilai')) el('realisasiNilai').innerText = `Rp ${realisasi.toLocaleString()}`;
-    let percent = Math.min(100, (realisasi / targetOmzet) * 100);
-    if (el('progressFill')) el('progressFill').style.width = `${percent}%`;
-    if (el('targetPercent')) el('targetPercent').innerText = `${percent.toFixed(1)}% tercapai`;
+    let realisasi = 0;
+    const currentMonth = new Date().toISOString().slice(0,7);
+    penjualanData.forEach(p => {
+        if (p.tanggal.startsWith(currentMonth)) realisasi += p.jumlah * p.harga;
+    });
+    const targetNilai = document.getElementById('targetNilai');
+    if (targetNilai) targetNilai.innerText = `Rp ${targetBulanan.toLocaleString()}`;
+    const realisasiNilai = document.getElementById('realisasiNilai');
+    if (realisasiNilai) realisasiNilai.innerText = `Rp ${realisasi.toLocaleString()}`;
+    const percent = Math.min(100, (realisasi / targetBulanan) * 100);
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) progressFill.style.width = `${percent}%`;
+    const targetPercent = document.getElementById('targetPercent');
+    if (targetPercent) targetPercent.innerText = `${percent.toFixed(1)}% tercapai`;
     
     const mp = { Shopee: { omzet: 0, order: 0, produk: 0 }, Tokopedia: { omzet: 0, order: 0, produk: 0 }, 'TikTok Shop': { omzet: 0, order: 0, produk: 0 } };
-    penjualanData.forEach(p => { if (mp[p.marketplace]) { mp[p.marketplace].omzet += p.jumlah * p.harga_jual; mp[p.marketplace].order++; mp[p.marketplace].produk += p.jumlah; } });
-    let totalMp = mp.Shopee.omzet + mp.Tokopedia.omzet + mp['TikTok Shop'].omzet;
+    penjualanData.forEach(p => {
+        if (mp[p.marketplace]) {
+            mp[p.marketplace].omzet += p.jumlah * p.harga;
+            mp[p.marketplace].order++;
+            mp[p.marketplace].produk += p.jumlah;
+        }
+    });
+    const totalOmzetMp = mp.Shopee.omzet + mp.Tokopedia.omzet + mp['TikTok Shop'].omzet;
     
-    if (el('mpShopeeOmzet')) el('mpShopeeOmzet').innerText = `Rp ${mp.Shopee.omzet.toLocaleString()}`;
-    if (el('mpShopeeOrder')) el('mpShopeeOrder').innerText = mp.Shopee.order;
-    if (el('mpShopeePersen')) el('mpShopeePersen').innerText = totalMp > 0 ? `${((mp.Shopee.omzet/totalMp)*100).toFixed(1)}%` : '0%';
-    if (el('mpTokopediaOmzet')) el('mpTokopediaOmzet').innerText = `Rp ${mp.Tokopedia.omzet.toLocaleString()}`;
-    if (el('mpTokopediaOrder')) el('mpTokopediaOrder').innerText = mp.Tokopedia.order;
-    if (el('mpTokopediaPersen')) el('mpTokopediaPersen').innerText = totalMp > 0 ? `${((mp.Tokopedia.omzet/totalMp)*100).toFixed(1)}%` : '0%';
-    if (el('mpTiktokOmzet')) el('mpTiktokOmzet').innerText = `Rp ${mp['TikTok Shop'].omzet.toLocaleString()}`;
-    if (el('mpTiktokOrder')) el('mpTiktokOrder').innerText = mp['TikTok Shop'].order;
-    if (el('mpTiktokPersen')) el('mpTiktokPersen').innerText = totalMp > 0 ? `${((mp['TikTok Shop'].omzet/totalMp)*100).toFixed(1)}%` : '0%';
-    if (el('totalOmzet')) el('totalOmzet').innerHTML = `Rp ${totalMp.toLocaleString()}`;
-    if (el('totalOrderCount')) el('totalOrderCount').innerText = totalOrder;
-    if (el('totalProdukCount')) el('totalProdukCount').innerText = totalProdukTerjual;
+    const mpShopeeOmzet = document.getElementById('mpShopeeOmzet');
+    if (mpShopeeOmzet) mpShopeeOmzet.innerText = `Rp ${mp.Shopee.omzet.toLocaleString()}`;
+    const mpShopeeOrder = document.getElementById('mpShopeeOrder');
+    if (mpShopeeOrder) mpShopeeOrder.innerText = mp.Shopee.order;
+    const mpShopeeProduk = document.getElementById('mpShopeeProduk');
+    if (mpShopeeProduk) mpShopeeProduk.innerText = mp.Shopee.produk;
+    const mpShopeePersen = document.getElementById('mpShopeePersen');
+    if (mpShopeePersen) mpShopeePersen.innerText = totalOmzetMp > 0 ? `${((mp.Shopee.omzet/totalOmzetMp)*100).toFixed(1)}%` : '0%';
+    
+    const mpTokopediaOmzet = document.getElementById('mpTokopediaOmzet');
+    if (mpTokopediaOmzet) mpTokopediaOmzet.innerText = `Rp ${mp.Tokopedia.omzet.toLocaleString()}`;
+    const mpTokopediaOrder = document.getElementById('mpTokopediaOrder');
+    if (mpTokopediaOrder) mpTokopediaOrder.innerText = mp.Tokopedia.order;
+    const mpTokopediaProduk = document.getElementById('mpTokopediaProduk');
+    if (mpTokopediaProduk) mpTokopediaProduk.innerText = mp.Tokopedia.produk;
+    const mpTokopediaPersen = document.getElementById('mpTokopediaPersen');
+    if (mpTokopediaPersen) mpTokopediaPersen.innerText = totalOmzetMp > 0 ? `${((mp.Tokopedia.omzet/totalOmzetMp)*100).toFixed(1)}%` : '0%';
+    
+    const mpTiktokOmzet = document.getElementById('mpTiktokOmzet');
+    if (mpTiktokOmzet) mpTiktokOmzet.innerText = `Rp ${mp['TikTok Shop'].omzet.toLocaleString()}`;
+    const mpTiktokOrder = document.getElementById('mpTiktokOrder');
+    if (mpTiktokOrder) mpTiktokOrder.innerText = mp['TikTok Shop'].order;
+    const mpTiktokProduk = document.getElementById('mpTiktokProduk');
+    if (mpTiktokProduk) mpTiktokProduk.innerText = mp['TikTok Shop'].produk;
+    const mpTiktokPersen = document.getElementById('mpTiktokPersen');
+    if (mpTiktokPersen) mpTiktokPersen.innerText = totalOmzetMp > 0 ? `${((mp['TikTok Shop'].omzet/totalOmzetMp)*100).toFixed(1)}%` : '0%';
+    
+    const totalOmzetEl = document.getElementById('totalOmzet');
+    if (totalOmzetEl) totalOmzetEl.innerHTML = `Rp ${totalOmzetMp.toLocaleString()}`;
+    const totalOrderCount = document.getElementById('totalOrderCount');
+    if (totalOrderCount) totalOrderCount.innerText = penjualanData.length;
+    const totalProdukCount = document.getElementById('totalProdukCount');
+    if (totalProdukCount) totalProdukCount.innerText = totalProdukTerjual;
     
     const productSales = {};
-    penjualanData.forEach(p => { productSales[p.produk] = (productSales[p.produk] || 0) + (p.jumlah * p.harga_jual); });
+    penjualanData.forEach(p => { productSales[p.produk] = (productSales[p.produk] || 0) + (p.jumlah * p.harga); });
     const top5 = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0,5);
-    if (el('topProdukList')) {
-        if (top5.length === 0) el('topProdukList').innerHTML = '<tr><td colspan="2" class="text-center">Belum ada数据</td></tr>';
-        else el('topProdukList').innerHTML = top5.map(p => `<tr><td style="font-weight:500;">${p[0]}</td><td style="text-align:right;">Rp ${p[1].toLocaleString()}</td></tr>`).join('');
+    const topList = document.getElementById('topProdukList');
+    if (topList) {
+        if (top5.length === 0) topList.innerHTML = '<td><td colspan="3" class="text-center">Belum ada数据</td><tr>';
+        else topList.innerHTML = top5.map(p => `<tr><td style="font-weight:500;">${p[0]}</td><td>0</td><td>Rp ${p[1].toLocaleString()}</td>`).join('');
     }
     
-    const alertList = stokData.filter(item => { let sisa = (item.stok_awal || 0) + (item.stok_masuk || 0) - (item.stok_keluar || 0); return sisa <= 0 || sisa < 10; }).map(item => `${item.produk} - ${((item.stok_awal||0)+(item.stok_masuk||0)-(item.stok_keluar||0)) <= 0 ? 'Habis' : 'Stok Menipis'}`);
-    if (el('alertStokList')) {
-        if (alertList.length === 0) el('alertStokList').innerHTML = '<div class="empty-alert">Tidak ada peringatan stok</div>';
-        else el('alertStokList').innerHTML = alertList.map(a => `<div class="alert-item">⚠️ ${a}</div>`).join('');
-    }
+    const alertList = [];
+    stokData.forEach(item => {
+        const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0);
+        if (sisa <= 0) alertList.push(`${item.nama} (Habis)`);
+        else if (sisa < 10) alertList.push(`${item.nama} (Sisa ${sisa})`);
+    });
+    const alertDiv = document.getElementById('alertStokList');
+    if (alertDiv) alertDiv.innerHTML = alertList.length ? alertList.map(a => `<div class="alert-item">⚠️ ${a}</div>`).join('') : '<div class="empty-alert">Tidak ada peringatan stok</div>';
     
     updateSalesChart();
-    updateMarketplaceChart(mp, totalMp);
+    updateMarketplaceChart(mp, totalOmzetMp);
 }
 
 let salesChart = null;
 function updateSalesChart() {
     const canvas = document.getElementById('salesChart');
     if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     const data = getOmzetLast7Days();
+    const labels = data.map(d => d.date.slice(5));
+    const values = data.map(d => d.omzet);
+    
     if (salesChart) salesChart.destroy();
-    salesChart = new Chart(canvas.getContext('2d'), { 
-        type: 'line', 
-        data: { labels: data.map(d => d.date.slice(5)), datasets: [{ label: 'Omzet', data: data.map(d => d.omzet), borderColor: '#1a1a2e', fill: true, tension: 0.3 }] }, 
-        options: { responsive: true, plugins: { legend: { display: false } } } 
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Omzet',
+                data: values,
+                borderColor: '#1a1a2e',
+                backgroundColor: 'rgba(26,26,46,0.05)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#1a1a2e'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
 }
 
@@ -204,11 +248,15 @@ let marketplaceChart = null;
 function updateMarketplaceChart(mp, total) {
     const canvas = document.getElementById('marketplaceChart');
     if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (marketplaceChart) marketplaceChart.destroy();
-    marketplaceChart = new Chart(canvas.getContext('2d'), { 
-        type: 'doughnut', 
-        data: { labels: ['Shopee', 'Tokopedia', 'TikTok Shop'], datasets: [{ data: [mp.Shopee.omzet, mp.Tokopedia.omzet, mp['TikTok Shop'].omzet], backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00'] }] }, 
-        options: { responsive: true } 
+    marketplaceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Shopee', 'Tokopedia', 'TikTok Shop'],
+            datasets: [{ data: [mp.Shopee.omzet, mp.Tokopedia.omzet, mp['TikTok Shop'].omzet], backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00'], borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
@@ -216,228 +264,491 @@ function updateMarketplaceChart(mp, total) {
 function renderPenjualan() {
     const tbody = document.getElementById('penjualanBody');
     if (!tbody) return;
-    if (penjualanData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada data penjualan</td></tr>'; return; }
-    tbody.innerHTML = penjualanData.map(item => `
-        <tr>
-            <td>${item.tanggal}</td>
-            <td>${item.marketplace}</td>
-            <td style="font-weight:500;">${item.produk}</td>
-            <td>${item.jumlah}</td>
-            <td>Rp ${item.harga_jual.toLocaleString()}</td>
-            <td>Rp ${(item.jumlah * item.harga_jual).toLocaleString()}</td>
-            <td>${item.status}</td>
-            <td>${isAdmin() ? `<button onclick="hapusPenjualan('${item.id}')" class="btn-delete">Hapus</button>` : ''}</td>
-        </tr>
-    `).join('');
+    const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const filterMP = document.getElementById('filterMarketplace')?.value || '';
+    let filtered = penjualanData.filter(item => {
+        const matchSearch = item.produk.toLowerCase().includes(search) || item.marketplace.toLowerCase().includes(search);
+        const matchMP = !filterMP || item.marketplace === filterMP;
+        return matchSearch && matchMP;
+    });
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada数据</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map((item, idx) => {
+        const deleteButton = isAdmin() ? `<button onclick="hapusPenjualan(${penjualanData.indexOf(item)})" class="btn-delete">Hapus</button>` : '';
+        return `
+            <tr>
+                <td>${item.tanggal}</td>
+                <td>${item.marketplace}</td>
+                <td style="font-weight:500;">${item.produk}</td>
+                <td>${item.jumlah}</td>
+                <td>Rp ${parseInt(item.harga).toLocaleString()}</td>
+                <td>Rp ${(item.jumlah * item.harga).toLocaleString()}</td>
+                <td>${item.status}</td>
+                <td>${deleteButton}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
-window.hapusPenjualan = async function(id) {
-    if (!isAdmin()) { alert('Hanya admin yang dapat menghapus'); return; }
-    if (confirm('Hapus data ini?')) { await supabase.from('penjualan').delete().eq('id', id); await loadAllData(); }
+window.hapusPenjualan = function(index) {
+    if (isViewer()) {
+        alert('Anda dalam mode viewer, tidak dapat menghapus data');
+        return;
+    }
+    if (confirm('Hapus data ini?')) {
+        penjualanData.splice(index, 1);
+        savePenjualan();
+        renderPenjualan();
+        renderDashboard();
+        updateStokFromPenjualan();
+        renderKeuangan();
+        renderStrategiProfessional();
+        applyViewerRestrictions();
+    }
 };
 
 // ========== RENDER STOK ==========
 function renderStok() {
     const tbody = document.getElementById('stokBody');
     if (!tbody) return;
-    if (stokData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data stok</td></tr>'; return; }
-    tbody.innerHTML = stokData.map(item => { 
-        let sisa = (item.stok_awal || 0) + (item.stok_masuk || 0) - (item.stok_keluar || 0); 
-        let status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman'); 
-        return `
-            <tr>
-                <td style="font-weight:500;">${item.produk}</td>
-                <td>${item.stok_awal || 0}</td>
-                <td>${item.stok_masuk || 0}</td>
-                <td>${item.stok_keluar || 0}</td>
-                <td><strong>${sisa}</strong></td>
-                <td>${status}</td>
-            </tr>
-        `;
+    const search = document.getElementById('searchStok')?.value.toLowerCase() || '';
+    const filtered = stokData.filter(item => item.nama.toLowerCase().includes(search));
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data stok</td></tr>';
+        const habisBody = document.getElementById('habisBody');
+        if (habisBody) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">-</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map((item, idx) => {
+        const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0);
+        const status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman');
+        const deleteButton = isAdmin() ? `<button onclick="hapusStok(${idx})" class="btn-delete">Hapus</button>` : '';
+        return `<tr><td style="font-weight:500;">${item.nama}</td><td>${item.stokAwal || 0}</td><td>${item.stokMasuk || 0}</td><td>${item.terjual || 0}</td><td>${sisa}</td><td>${status}</td><td>${deleteButton}</td></tr>`;
     }).join('');
-    
-    let habis = stokData.filter(item => { let sisa = (item.stok_awal || 0) + (item.stok_masuk || 0) - (item.stok_keluar || 0); return sisa <= 0; });
-    let habisBody = document.getElementById('habisBody');
-    if (habisBody) {
-        if (habis.length === 0) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">Tidak ada produk habis</td></tr>';
-        else habisBody.innerHTML = habis.map(item => `<tr><td>${item.produk}</td><td>0</td></tr>`).join('');
-    }
+    const habis = stokData.filter(item => { const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0); return sisa <= 0; });
+    const habisBody = document.getElementById('habisBody');
+    if (habisBody) habisBody.innerHTML = habis.length === 0 ? '<tr><td colspan="2" class="text-center">-</td></tr>' : habis.map(item => `<tr><td>${item.nama}</td><td>0</td></tr>`).join('');
 }
 
-// ========== RENDER KEUANGAN ==========
+window.hapusStok = function(index) {
+    if (isViewer()) {
+        alert('Anda dalam mode viewer, tidak dapat menghapus data');
+        return;
+    }
+    if (confirm('Hapus produk ini?')) {
+        stokData.splice(index, 1);
+        saveStok();
+        renderStok();
+        renderDashboard();
+        applyViewerRestrictions();
+    }
+};
+
+function updateStokFromPenjualan() {
+    const productSold = {};
+    penjualanData.forEach(p => { productSold[p.produk] = (productSold[p.produk] || 0) + p.jumlah; });
+    stokData.forEach(item => { item.terjual = productSold[item.nama] || 0; });
+    saveStok();
+    renderStok();
+}
+
+// ========== KEUANGAN ==========
 function renderKeuangan() {
-    let totalOmzet = getTotalOmzet(), totalBiaya = getTotalBiaya(), labaBersih = getLabaBersih();
-    let totalTransaksi = penjualanData.length, avgTransaksi = totalTransaksi > 0 ? totalOmzet / totalTransaksi : 0;
-    let margin = totalOmzet > 0 ? (labaBersih / totalOmzet) * 100 : 0;
-    const el = (id) => document.getElementById(id);
-    if (el('totalOmzetKeu')) el('totalOmzetKeu').innerText = `Rp ${totalOmzet.toLocaleString()}`;
-    if (el('totalBiayaKeu')) el('totalBiayaKeu').innerText = `Rp ${totalBiaya.toLocaleString()}`;
-    if (el('labaBersihKeu')) el('labaBersihKeu').innerText = `Rp ${labaBersih.toLocaleString()}`;
-    if (el('summaryTotal')) el('summaryTotal').innerText = `Rp ${totalBiaya.toLocaleString()}`;
-    if (el('avgTransaction')) el('avgTransaction').innerText = `Rp ${avgTransaksi.toLocaleString()}`;
-    if (el('marginProfit')) el('marginProfit').innerText = `${margin.toFixed(1)}%`;
-    if (el('totalTransaksi')) el('totalTransaksi').innerText = totalTransaksi;
+    const totalOmzet = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
+    const totalBiaya = (biayaOp.iklan || 0) + (biayaOp.fee || 0) + (biayaOp.ongkir || 0) + (biayaOp.lain || 0);
+    const labaBersih = totalOmzet - totalBiaya;
     
-    let profitCanvas = document.getElementById('profitChart');
-    if (profitCanvas) { 
-        if (window.profitChart) window.profitChart.destroy(); 
-        window.profitChart = new Chart(profitCanvas.getContext('2d'), { 
-            type: 'bar', 
-            data: { 
-                labels: ['Pendapatan', 'Biaya', 'Laba Bersih'], 
-                datasets: [{ 
-                    data: [totalOmzet, totalBiaya, labaBersih], 
-                    backgroundColor: ['#1a1a2e', '#e03131', '#2e7d32'] 
-                }] 
-            }, 
-            options: { responsive: true, plugins: { legend: { display: false } } } 
-        }); 
+    const omzetEl = document.getElementById('totalOmzetKeu');
+    if (omzetEl) omzetEl.innerText = `Rp ${totalOmzet.toLocaleString()}`;
+    const biayaEl = document.getElementById('totalBiayaKeu');
+    if (biayaEl) biayaEl.innerText = `Rp ${totalBiaya.toLocaleString()}`;
+    const labaEl = document.getElementById('labaBersihKeu');
+    if (labaEl) labaEl.innerText = `Rp ${labaBersih.toLocaleString()}`;
+    
+    const summaryIklan = document.getElementById('summaryIklan');
+    if (summaryIklan) summaryIklan.innerText = `Rp ${(biayaOp.iklan || 0).toLocaleString()}`;
+    const summaryFee = document.getElementById('summaryFee');
+    if (summaryFee) summaryFee.innerText = `Rp ${(biayaOp.fee || 0).toLocaleString()}`;
+    const summaryOngkir = document.getElementById('summaryOngkir');
+    if (summaryOngkir) summaryOngkir.innerText = `Rp ${(biayaOp.ongkir || 0).toLocaleString()}`;
+    const summaryLain = document.getElementById('summaryLain');
+    if (summaryLain) summaryLain.innerText = `Rp ${(biayaOp.lain || 0).toLocaleString()}`;
+    const summaryTotal = document.getElementById('summaryTotal');
+    if (summaryTotal) summaryTotal.innerText = `Rp ${totalBiaya.toLocaleString()}`;
+    
+    const totalTransaksi = penjualanData.length;
+    const avgTransaksi = totalTransaksi > 0 ? totalOmzet / totalTransaksi : 0;
+    const avgTransaction = document.getElementById('avgTransaction');
+    if (avgTransaction) avgTransaction.innerText = `Rp ${avgTransaksi.toLocaleString()}`;
+    const marginProfit = document.getElementById('marginProfit');
+    if (marginProfit) marginProfit.innerText = totalOmzet > 0 ? `${((labaBersih / totalOmzet) * 100).toFixed(1)}%` : '0%';
+    const totalTransaksiEl = document.getElementById('totalTransaksi');
+    if (totalTransaksiEl) totalTransaksiEl.innerText = totalTransaksi;
+    
+    updateProfitChart(totalOmzet, totalBiaya, labaBersih);
+}
+
+let profitChart = null;
+function updateProfitChart(omzet, biaya, laba) {
+    const canvas = document.getElementById('profitChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (profitChart) profitChart.destroy();
+    profitChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Pendapatan', 'Biaya', 'Laba Bersih'], datasets: [{ data: [omzet, biaya, laba], backgroundColor: ['#1a1a2e', '#e03131', '#2e7d32'], borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
+    });
+}
+
+// ========== STRATEGI ==========
+function renderStrategiProfessional() {
+    if (!window.location.href.includes('strategi.html')) return;
+    
+    const totalOmzet = penjualanData.reduce((sum, p) => sum + (p.jumlah * p.harga), 0);
+    const totalUnit = penjualanData.reduce((sum, p) => sum + p.jumlah, 0);
+    
+    const productStats = {};
+    penjualanData.forEach(p => {
+        if (!productStats[p.produk]) productStats[p.produk] = { unit: 0, omzet: 0 };
+        productStats[p.produk].unit += p.jumlah;
+        productStats[p.produk].omzet += p.jumlah * p.harga;
+    });
+    
+    const productList = Object.entries(productStats).map(([name, data]) => ({ name, unit: data.unit, omzet: data.omzet, share: totalOmzet > 0 ? (data.omzet / totalOmzet) * 100 : 0 }));
+    productList.sort((a, b) => b.omzet - a.omzet);
+    
+    const top5 = productList.slice(0, 5);
+    const bottom5 = productList.slice(-5).reverse();
+    const topProduct = top5[0] || null;
+    const slowProduct = bottom5[0] || null;
+    
+    const uniqueProducts = productList.length;
+    const activeMarketplaces = new Set(penjualanData.map(p => p.marketplace)).size;
+    let score = 0;
+    if (totalOmzet > 0) score += 30;
+    if (uniqueProducts >= 3) score += 20;
+    else if (uniqueProducts >= 1) score += 10;
+    if (activeMarketplaces >= 2) score += 20;
+    else if (activeMarketplaces >= 1) score += 10;
+    if (topProduct && topProduct.share < 60) score += 15;
+    else if (topProduct) score += 5;
+    if (totalUnit >= 10) score += 15;
+    else if (totalUnit >= 1) score += 5;
+    
+    const businessScore = document.getElementById('businessScore');
+    if (businessScore) businessScore.innerText = score;
+    const businessStatus = document.getElementById('businessStatus');
+    if (businessStatus) {
+        if (score >= 70) { businessStatus.innerText = 'Sehat'; businessStatus.style.color = '#2e7d32'; }
+        else if (score >= 40) { businessStatus.innerText = 'Perlu Perbaikan'; businessStatus.style.color = '#e65100'; }
+        else { businessStatus.innerText = 'Kritis'; businessStatus.style.color = '#c62828'; }
+    }
+    
+    const topProductEl = document.getElementById('topProduct');
+    if (topProductEl) topProductEl.innerText = topProduct ? topProduct.name : '-';
+    const topProductShare = document.getElementById('topProductShare');
+    if (topProductShare) topProductShare.innerText = topProduct ? `${topProduct.share.toFixed(1)}% omzet` : '0% omzet';
+    const slowProductEl = document.getElementById('slowProduct');
+    if (slowProductEl) slowProductEl.innerText = slowProduct ? slowProduct.name : '-';
+    const slowProductShare = document.getElementById('slowProductShare');
+    if (slowProductShare) slowProductShare.innerText = slowProduct ? `${slowProduct.share.toFixed(1)}% omzet` : '0% omzet';
+    
+    const topTable = document.getElementById('topProductsTable');
+    if (topTable) {
+        if (top5.length === 0) topTable.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada data</td></tr>';
+        else topTable.innerHTML = top5.map((p, i) => `<tr><td>${i+1}</td><td style="font-weight:500;">${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td></tr>`).join('');
+    }
+    
+    const bottomTable = document.getElementById('bottomProductsTable');
+    if (bottomTable) {
+        if (bottom5.length === 0 || bottom5[0].omzet === 0) bottomTable.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada数据</td></tr>';
+        else bottomTable.innerHTML = bottom5.map((p, i) => `<tr><td>${i+1}</td><td style="font-weight:500;">${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td></tr>`).join('');
+    }
+    
+    const mpStats = { Shopee: { omzet: 0, order: 0 }, Tokopedia: { omzet: 0, order: 0 }, 'TikTok Shop': { omzet: 0, order: 0 } };
+    penjualanData.forEach(p => { if (mpStats[p.marketplace]) { mpStats[p.marketplace].omzet += p.jumlah * p.harga; mpStats[p.marketplace].order++; } });
+    const bestMp = Object.entries(mpStats).sort((a,b) => b[1].omzet - a[1].omzet)[0];
+    
+    const shopeeOmzet = document.getElementById('shopeeOmzet');
+    if (shopeeOmzet) shopeeOmzet.innerText = `Rp ${mpStats.Shopee.omzet.toLocaleString()}`;
+    const shopeeOrder = document.getElementById('shopeeOrder');
+    if (shopeeOrder) shopeeOrder.innerText = mpStats.Shopee.order;
+    const tokopediaOmzet = document.getElementById('tokopediaOmzet');
+    if (tokopediaOmzet) tokopediaOmzet.innerText = `Rp ${mpStats.Tokopedia.omzet.toLocaleString()}`;
+    const tokopediaOrder = document.getElementById('tokopediaOrder');
+    if (tokopediaOrder) tokopediaOrder.innerText = mpStats.Tokopedia.order;
+    const tiktokOmzet = document.getElementById('tiktokOmzet');
+    if (tiktokOmzet) tiktokOmzet.innerText = `Rp ${mpStats['TikTok Shop'].omzet.toLocaleString()}`;
+    const tiktokOrder = document.getElementById('tiktokOrder');
+    if (tiktokOrder) tiktokOrder.innerText = mpStats['TikTok Shop'].order;
+    
+    const shopeeRec = document.getElementById('shopeeRec');
+    if (shopeeRec) shopeeRec.innerHTML = bestMp && bestMp[0] === 'Shopee' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    const tokopediaRec = document.getElementById('tokopediaRec');
+    if (tokopediaRec) tokopediaRec.innerHTML = bestMp && bestMp[0] === 'Tokopedia' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    const tiktokRec = document.getElementById('tiktokRec');
+    if (tiktokRec) tiktokRec.innerHTML = bestMp && bestMp[0] === 'TikTok Shop' ? '✓ Marketplace terbaik Anda' : 'Tingkatkan promosi di sini';
+    
+    const recommendations = [];
+    if (topProduct && topProduct.share > 50) recommendations.push(`Produk "${topProduct.name}" mendominasi ${topProduct.share.toFixed(1)}% omzet. Fokus pada produk ini.`);
+    if (slowProduct && slowProduct.omzet > 0 && slowProduct.share < 5) recommendations.push(`Produk "${slowProduct.name}" hanya berkontribusi ${slowProduct.share.toFixed(1)}% omzet. Evaluasi produk ini.`);
+    if (totalUnit < 10) recommendations.push('Volume penjualan masih rendah. Coba program diskon atau bundling produk.');
+    if (recommendations.length === 0) recommendations.push('Terus pantau data penjualan untuk mendapatkan rekomendasi.');
+    
+    const recommendationList = document.getElementById('recommendationList');
+    if (recommendationList) recommendationList.innerHTML = recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('');
+    
+    const savedPlan = localStorage.getItem('actionPlan') || '';
+    const actionPlan = document.getElementById('actionPlan');
+    if (actionPlan) actionPlan.value = savedPlan;
+    
+    const totalTop5 = top5.reduce((s,p) => s + p.omzet, 0);
+    const distCanvas = document.getElementById('distributionChart');
+    if (distCanvas) {
+        const ctx = distCanvas.getContext('2d');
+        if (window.distChart) window.distChart.destroy();
+        window.distChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: [...top5.map(p => p.name), 'Lainnya'], datasets: [{ data: [...top5.map(p => p.omzet), totalOmzet - totalTop5], backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00', '#e03131', '#2e7d32', '#adb5bd'] }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+        });
+    }
+    
+    const insight1 = document.getElementById('insight1');
+    if (insight1) insight1.innerText = uniqueProducts;
+    const insight2 = document.getElementById('insight2');
+    if (insight2) insight2.innerText = activeMarketplaces;
+    const insight3 = document.getElementById('insight3');
+    if (insight3) insight3.innerText = totalUnit > 0 ? `Rp ${Math.round(totalOmzet/totalUnit).toLocaleString()}` : 'Rp 0';
+}
+
+// ========== MODAL TAMBAH DATA ==========
+if (document.getElementById('btnTambah')) {
+    const modal = document.getElementById('modalTambah');
+    const btn = document.getElementById('btnTambah');
+    const close = document.querySelector('.close');
+    
+    if (btn) {
+        btn.onclick = () => {
+            if (isAdmin()) {
+                modal.style.display = 'block';
+            } else {
+                alert('Mode viewer tidak dapat menambah data');
+            }
+        };
+    }
+    if (close) close.onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    
+    document.getElementById('formPenjualan')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+        penjualanData.push({
+            tanggal: document.getElementById('tgl').value,
+            marketplace: document.getElementById('mp').value,
+            produk: document.getElementById('produk').value,
+            jumlah: parseInt(document.getElementById('jumlah').value) || 0,
+            harga: parseInt(document.getElementById('harga').value) || 0,
+            status: document.getElementById('status').value
+        });
+        savePenjualan();
+        renderPenjualan();
+        renderDashboard();
+        updateStokFromPenjualan();
+        renderKeuangan();
+        renderStrategiProfessional();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Data tersimpan!');
+        applyViewerRestrictions();
+    });
+}
+
+if (document.getElementById('btnTambahStok')) {
+    const modal = document.getElementById('modalStok');
+    const btn = document.getElementById('btnTambahStok');
+    const close = document.querySelector('.close-stok');
+    
+    if (btn) {
+        btn.onclick = () => {
+            if (isAdmin()) {
+                modal.style.display = 'block';
+            } else {
+                alert('Mode viewer tidak dapat menambah data');
+            }
+        };
+    }
+    if (close) close.onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    
+    document.getElementById('formStok')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+        stokData.push({
+            nama: document.getElementById('namaProduk').value,
+            stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
+            stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
+            terjual: 0
+        });
+        saveStok();
+        renderStok();
+        renderDashboard();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Stok tersimpan!');
+        applyViewerRestrictions();
+    });
+}
+
+// Biaya Operasional
+if (document.getElementById('biayaIklan')) {
+    document.getElementById('biayaIklan').value = biayaOp.iklan || 0;
+    document.getElementById('feeMarketplace').value = biayaOp.fee || 0;
+    document.getElementById('ongkir').value = biayaOp.ongkir || 0;
+    document.getElementById('lainLain').value = biayaOp.lain || 0;
+    
+    const simpanBiaya = document.getElementById('simpanBiaya');
+    if (simpanBiaya) {
+        simpanBiaya.addEventListener('click', () => {
+            if (isViewer()) { alert('Mode viewer tidak dapat mengedit biaya'); return; }
+            biayaOp = {
+                iklan: parseInt(document.getElementById('biayaIklan').value) || 0,
+                fee: parseInt(document.getElementById('feeMarketplace').value) || 0,
+                ongkir: parseInt(document.getElementById('ongkir').value) || 0,
+                lain: parseInt(document.getElementById('lainLain').value) || 0
+            };
+            localStorage.setItem('biayaOp', JSON.stringify(biayaOp));
+            renderKeuangan();
+            alert('Biaya operasional telah disimpan');
+        });
     }
 }
 
-// ========== RENDER STRATEGI ==========
-function renderStrategi() {
-    const el = (id) => document.getElementById(id);
-    if (el('businessScore')) el('businessScore').innerText = penjualanData.length > 0 ? '75' : '-';
-    if (el('businessStatus')) el('businessStatus').innerText = penjualanData.length > 0 ? 'Sehat' : 'Belum ada data';
-    if (el('topProduct')) el('topProduct').innerText = penjualanData.length > 0 ? 'Ada' : '-';
-    if (el('slowProduct')) el('slowProduct').innerText = '-';
-    if (el('topProductsTable')) el('topProductsTable').innerHTML = '<tr><td colspan="4" class="text-center">Data akan muncul setelah ada transaksi</td></tr>';
-    if (el('bottomProductsTable')) el('bottomProductsTable').innerHTML = '<tr><td colspan="4" class="text-center">Data akan muncul setelah ada transaksi</td></tr>';
-    if (el('shopeeOmzet')) el('shopeeOmzet').innerText = 'Rp 0';
-    if (el('shopeeOrder')) el('shopeeOrder').innerText = '0';
-    if (el('tokopediaOmzet')) el('tokopediaOmzet').innerText = 'Rp 0';
-    if (el('tokopediaOrder')) el('tokopediaOrder').innerText = '0';
-    if (el('tiktokOmzet')) el('tiktokOmzet').innerText = 'Rp 0';
-    if (el('tiktokOrder')) el('tiktokOrder').innerText = '0';
-    if (el('recommendationList')) el('recommendationList').innerHTML = '<div class="recommendation-item">Mulai input data penjualan untuk mendapatkan rekomendasi</div>';
-    if (el('insight1')) el('insight1').innerText = penjualanData.length;
-    if (el('insight2')) el('insight2').innerText = new Set(penjualanData.map(p => p.marketplace)).size;
-    if (el('insight3')) el('insight3').innerText = 'Rp 0';
-}
-
-// ========== VIEWER RESTRICTIONS ==========
-function applyViewerRestrictions() {
-    if (!isViewer()) return;
-    document.querySelectorAll('.btn-primary, #btnTambah, #btnTambahStok, #simpanBiaya, #saveActionPlan').forEach(btn => { if (btn) btn.style.display = 'none'; });
-    document.querySelectorAll('input, select, textarea').forEach(input => { input.disabled = true; input.style.backgroundColor = '#f8f9fa'; });
-}
-
-// ========== TAMBAH DATA PENJUALAN ==========
-if (document.getElementById('btnTambah')) {
-    const modal = document.getElementById('modalTambah'), btn = document.getElementById('btnTambah'), close = document.querySelector('#modalTambah .close');
-    if (btn) btn.onclick = () => { if (isAdmin()) modal.style.display = 'block'; else alert('Hanya admin yang dapat menambah data'); };
-    if (close) close.onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    document.getElementById('formPenjualan')?.addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } 
-        const newData = { 
-            tanggal: document.getElementById('tgl').value, 
-            marketplace: document.getElementById('mp').value, 
-            produk: document.getElementById('produk').value, 
-            jumlah: parseInt(document.getElementById('jumlah').value) || 0, 
-            harga_jual: parseInt(document.getElementById('harga').value) || 0, 
-            status: document.getElementById('status').value 
-        }; 
-        const { error } = await supabase.from('penjualan').insert([newData]); 
-        if (error) alert('Gagal: ' + error.message); 
-        else { 
-            await loadAllData(); 
-            modal.style.display = 'none'; 
-            e.target.reset(); 
-            alert('Data tersimpan!'); 
-        } 
-    });
-}
-
-// ========== TAMBAH DATA STOK ==========
-if (document.getElementById('btnTambahStok')) {
-    const modal = document.getElementById('modalStok'), btn = document.getElementById('btnTambahStok'), close = document.querySelector('#modalStok .close-stok');
-    if (btn) btn.onclick = () => { if (isAdmin()) modal.style.display = 'block'; else alert('Hanya admin yang dapat menambah data'); };
-    if (close) close.onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    document.getElementById('formStok')?.addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } 
-        const newData = { 
-            produk: document.getElementById('namaProduk').value, 
-            stok_awal: parseInt(document.getElementById('stokAwal').value) || 0, 
-            stok_masuk: parseInt(document.getElementById('stokMasuk').value) || 0, 
-            stok_keluar: 0 
-        }; 
-        const { error } = await supabase.from('stok').insert([newData]); 
-        if (error) alert('Gagal: ' + error.message); 
-        else { 
-            await loadAllData(); 
-            modal.style.display = 'none'; 
-            e.target.reset(); 
-            alert('Stok tersimpan!'); 
-        } 
-    });
-}
-
-// ========== SIMPAN BIAYA ==========
-if (document.getElementById('simpanBiaya')) {
-    document.getElementById('simpanBiaya').addEventListener('click', async () => { 
-        if (!isAdmin()) { alert('Hanya admin yang dapat mengedit biaya'); return; } 
-        const biayaList = [
-            { jenis: 'Biaya Iklan', nominal: parseInt(document.getElementById('biayaIklan').value) || 0 }, 
-            { jenis: 'Fee Marketplace', nominal: parseInt(document.getElementById('feeMarketplace').value) || 0 }, 
-            { jenis: 'Biaya Pengiriman', nominal: parseInt(document.getElementById('ongkir').value) || 0 }, 
-            { jenis: 'Biaya Lainnya', nominal: parseInt(document.getElementById('lainLain').value) || 0 }
-        ]; 
-        for (let b of biayaList) { 
-            await supabase.from('biaya_operasional').insert([{ 
-                tanggal: new Date().toISOString().split('T')[0], 
-                jenis: b.jenis, 
-                nominal: b.nominal 
-            }]); 
-        } 
-        await loadAllData(); 
-        alert('Biaya tersimpan!'); 
-    });
-}
-
-// ========== SIMPAN RENCANA TINDAKAN ==========
+// Action Plan
 if (document.getElementById('saveActionPlan')) {
-    document.getElementById('saveActionPlan').addEventListener('click', () => {
-        if (!isAdmin()) { alert('Hanya admin yang dapat mengedit rencana'); return; }
-        localStorage.setItem('actionPlan', document.getElementById('actionPlan').value);
-        const hint = document.getElementById('saveHint');
-        if (hint) { hint.innerText = 'Tersimpan!'; setTimeout(() => hint.innerText = '', 2000); }
-    });
+    const saveActionPlan = document.getElementById('saveActionPlan');
+    if (saveActionPlan) {
+        saveActionPlan.addEventListener('click', () => {
+            if (isViewer()) { alert('Mode viewer tidak dapat mengedit rencana'); return; }
+            const plan = document.getElementById('actionPlan').value;
+            localStorage.setItem('actionPlan', plan);
+            const hint = document.getElementById('saveHint');
+            if (hint) { hint.innerText = 'Tersimpan!'; setTimeout(() => hint.innerText = '', 2000); }
+        });
+        if (isViewer()) saveActionPlan.style.display = 'none';
+    }
 }
 
-// ========== EXPORT EXCEL ==========
-if (document.getElementById('btnExport')) {
-    document.getElementById('btnExport').addEventListener('click', () => { 
-        if (!isAdmin()) { alert('Hanya admin yang dapat export'); return; } 
-        if (!penjualanData.length) { alert('Tidak ada data'); return; } 
-        let csv = "Tanggal,Marketplace,Produk,Jumlah,Harga,Total,Status\n"; 
-        penjualanData.forEach(p => { 
-            csv += `"${p.tanggal}","${p.marketplace}","${p.produk}",${p.jumlah},${p.harga_jual},${p.jumlah * p.harga_jual},"${p.status}"\n`; 
-        }); 
-        const blob = new Blob([csv], { type: 'text/csv' }); 
-        const link = document.createElement('a'); 
-        link.href = URL.createObjectURL(blob); 
-        link.download = `penjualan_${new Date().toISOString().slice(0,10)}.csv`; 
-        link.click(); 
-        alert(`Export ${penjualanData.length} data!`); 
+// Export Excel
+const exportExcelBtn = document.getElementById('btnExport');
+if (exportExcelBtn) {
+    const newExportBtn = exportExcelBtn.cloneNode(true);
+    exportExcelBtn.parentNode.replaceChild(newExportBtn, exportExcelBtn);
+    
+    newExportBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (isViewer()) {
+            alert('Maaf, mode viewer tidak dapat mengekspor data.');
+            return;
+        }
+        
+        if (!penjualanData || penjualanData.length === 0) {
+            alert('Tidak ada data penjualan untuk diekspor.');
+            return;
+        }
+        
+        try {
+            let csv = "\"Tanggal\",\"Marketplace\",\"Produk\",\"Jumlah\",\"Harga\",\"Total\",\"Status\"\n";
+            penjualanData.forEach(item => {
+                const total = item.jumlah * item.harga;
+                csv += `"${item.tanggal}","${item.marketplace}","${item.produk}",${item.jumlah},${item.harga},${total},"${item.status}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `penjualan_cylla_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert(`Berhasil mengekspor ${penjualanData.length} data penjualan!`);
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Gagal mengekspor data. Silakan coba lagi.');
+        }
     });
+    
+    if (isViewer()) newExportBtn.style.display = 'none';
 }
 
-// ========== SEARCH & FILTER ==========
-if (document.getElementById('searchInput')) document.getElementById('searchInput')?.addEventListener('keyup', () => renderPenjualan());
-if (document.getElementById('filterMarketplace')) document.getElementById('filterMarketplace')?.addEventListener('change', () => renderPenjualan());
-if (document.getElementById('searchStok')) document.getElementById('searchStok')?.addEventListener('keyup', () => renderStok());
+// Search & Filter
+if (document.getElementById('searchInput')) {
+    document.getElementById('searchInput')?.addEventListener('keyup', () => renderPenjualan());
+    document.getElementById('filterMarketplace')?.addEventListener('change', () => renderPenjualan());
+}
+if (document.getElementById('searchStok')) {
+    document.getElementById('searchStok')?.addEventListener('keyup', () => renderStok());
+}
 
-// ========== LOGIN ==========
+// ========== LOGIN SYSTEM ==========
 if (document.getElementById('loginForm')) {
-    const roleBtns = document.querySelectorAll('.role-btn'), adminInfo = document.getElementById('adminInfo'), viewerInfo = document.getElementById('viewerInfo');
-    roleBtns.forEach(btn => btn.addEventListener('click', () => { roleBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); if (btn.getAttribute('data-role') === 'admin') { adminInfo.classList.remove('hidden'); viewerInfo.classList.add('hidden'); } else { adminInfo.classList.add('hidden'); viewerInfo.classList.remove('hidden'); } }));
-    document.getElementById('loginForm').addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('email').value, password = document.getElementById('password').value; if (email === 'cylla@store' && password === 'cylla123') { localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRole', 'admin'); window.location.href = 'dashboard.html'; } else if (email === 'agung@panca' && password === 'pancagung') { localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRole', 'viewer'); window.location.href = 'dashboard.html'; } else alert('Email atau password salah!'); });
+    const roleBtns = document.querySelectorAll('.role-btn');
+    const adminInfo = document.getElementById('adminInfo');
+    const viewerInfo = document.getElementById('viewerInfo');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    if (roleBtns.length) {
+        roleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                roleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const role = btn.getAttribute('data-role');
+                if (role === 'admin') {
+                    if (adminInfo) adminInfo.classList.remove('hidden');
+                    if (viewerInfo) viewerInfo.classList.add('hidden');
+                    if (emailInput) emailInput.value = 'cylla@store';
+                    if (passwordInput) passwordInput.value = '';
+                } else {
+                    if (adminInfo) adminInfo.classList.add('hidden');
+                    if (viewerInfo) viewerInfo.classList.remove('hidden');
+                    if (emailInput) emailInput.value = 'agung@panca';
+                    if (passwordInput) passwordInput.value = '';
+                }
+            });
+        });
+    }
+    
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        if (email === 'cylla@store' && password === 'cylla123') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'admin');
+            window.location.href = 'dashboard.html';
+        } 
+        else if (email === 'agung@panca' && password === 'pancagung') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'viewer');
+            window.location.href = 'dashboard.html';
+        }
+        else {
+            alert('Email atau password salah!');
+        }
+    });
 }
 
-// ========== INITIAL LOAD ==========
-if (!window.location.href.includes('login.html')) { setTimeout(() => { loadAllData(); }, 100); }
+// ========== INITIAL RENDER ==========
+renderPenjualan();
+renderStok();
+renderDashboard();
+renderKeuangan();
+renderStrategiProfessional();
+applyViewerRestrictions();
