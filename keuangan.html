@@ -11,10 +11,7 @@
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Cylla.store</h2>
-                <p>PT PANCA AGUNG</p>
-            </div>
+            <div class="sidebar-header"><h2>Cylla.store</h2><p>PT PANCA AGUNG</p></div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item">Dashboard</a>
                 <a href="penjualan.html" class="nav-item">Data Penjualan</a>
@@ -22,127 +19,19 @@
                 <a href="keuangan.html" class="nav-item active">Laporan Keuangan</a>
                 <a href="strategi.html" class="nav-item">Strategi Bisnis</a>
             </nav>
-            <div class="sidebar-footer">
-                <span>Administrator</span>
-                <a href="login.html" class="logout" onclick="localStorage.clear()">Keluar</a>
-            </div>
+            <div class="sidebar-footer"><span>Administrator</span><a href="login.html" class="logout" onclick="localStorage.clear()">Keluar</a></div>
         </aside>
-
         <main class="main-content">
-            <div class="top-bar">
-                <div>
-                    <h1>Laporan Keuangan</h1>
-                    <p class="subtitle">Ringkasan laba rugi dan biaya operasional</p>
-                </div>
-                <div class="date-badge" id="currentDate"></div>
-            </div>
-
-            <!-- Stat Cards Keuangan -->
+            <div class="top-bar"><div><h1>Laporan Keuangan</h1><p class="subtitle">Ringkasan laba rugi dan biaya operasional</p></div><div class="date-badge" id="currentDate"></div></div>
             <div class="stat-grid">
-                <div class="stat-card">
-                    <div class="stat-icon green-bg">💰</div>
-                    <div class="stat-details">
-                        <span class="stat-label">Pendapatan Kotor</span>
-                        <span class="stat-value" id="totalOmzetKeu">Rp 0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon red-bg">📦</div>
-                    <div class="stat-details">
-                        <span class="stat-label">Total HPP</span>
-                        <span class="stat-value" id="totalHPPKeu">Rp 0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon blue-bg">📈</div>
-                    <div class="stat-details">
-                        <span class="stat-label">Laba Kotor</span>
-                        <span class="stat-value" id="totalLabaKeu">Rp 0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon orange-bg">📊</div>
-                    <div class="stat-details">
-                        <span class="stat-label">Biaya Operasional</span>
-                        <span class="stat-value" id="totalBiayaKeu">Rp 0</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon purple-bg">🎯</div>
-                    <div class="stat-details">
-                        <span class="stat-label">Laba Bersih</span>
-                        <span class="stat-value" id="labaBersihKeu">Rp 0</span>
-                    </div>
-                </div>
+                <div class="stat-card"><div class="stat-icon green-bg">💰</div><div class="stat-details"><span class="stat-label">Pendapatan Kotor</span><span class="stat-value" id="totalOmzetKeu">Rp 0</span></div></div>
+                <div class="stat-card"><div class="stat-icon orange-bg">📊</div><div class="stat-details"><span class="stat-label">Biaya Operasional</span><span class="stat-value" id="totalBiayaKeu">Rp 0</span></div></div>
+                <div class="stat-card"><div class="stat-icon purple-bg">🎯</div><div class="stat-details"><span class="stat-label">Laba Bersih</span><span class="stat-value" id="labaBersihKeu">Rp 0</span></div></div>
             </div>
-
-            <!-- Biaya Operasional -->
-            <div class="data-panel">
-                <div class="panel-header">
-                    <h3>Rincian Biaya Operasional</h3>
-                    <span class="panel-sub">Periode berjalan</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
-                    <div><label style="display: block; margin-bottom: 6px; font-size: 12px;">Biaya Iklan</label><input type="number" id="biayaIklan" class="search-input" placeholder="0"></div>
-                    <div><label style="display: block; margin-bottom: 6px; font-size: 12px;">Fee Marketplace</label><input type="number" id="feeMarketplace" class="search-input" placeholder="0"></div>
-                    <div><label style="display: block; margin-bottom: 6px; font-size: 12px;">Biaya Pengiriman</label><input type="number" id="ongkir" class="search-input" placeholder="0"></div>
-                    <div><label style="display: block; margin-bottom: 6px; font-size: 12px;">Biaya Lainnya</label><input type="number" id="lainLain" class="search-input" placeholder="0"></div>
-                </div>
-                <button id="simpanBiaya" class="btn-primary">Simpan Perubahan</button>
-            </div>
-
-            <!-- Ringkasan Biaya & Laba Rugi -->
-            <div class="charts-wrapper">
-                <div class="data-panel">
-                    <div class="panel-header">
-                        <h3>Ringkasan Biaya</h3>
-                        <span class="panel-sub">Total pengeluaran</span>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="clean-table">
-                            <tr><td style="width: 70%;">Biaya Iklan</td><td id="summaryIklan">Rp 0</td></tr>
-                            <tr><td>Fee Marketplace</td><td id="summaryFee">Rp 0</td></tr>
-                            <tr><td>Biaya Pengiriman</td><td id="summaryOngkir">Rp 0</td></tr>
-                            <tr><td>Biaya Lainnya</td><td id="summaryLain">Rp 0</td></tr>
-                            <tr style="background:#f8f9fa; font-weight:bold;"><td>Total Biaya</td><td id="summaryTotal">Rp 0</td></tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="data-panel">
-                    <div class="panel-header">
-                        <h3>Laba Rugi per Bulan</h3>
-                        <span class="panel-sub">Ringkasan bulanan</span>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="clean-table">
-                            <thead><tr><th>Bulan</th><th>Omzet</th><th>HPP</th><th>Laba Kotor</th><th>Laba Bersih</th></tr></thead>
-                            <tbody id="labaRugiBody"><tr><td colspan="5" class="text-center">Belum ada data</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart Laba -->
-            <div class="chart-panel">
-                <div class="panel-header">
-                    <h3>Visualisasi Laba</h3>
-                    <span class="panel-sub">Pendapatan vs Biaya</span>
-                </div>
-                <canvas id="profitChart" height="120"></canvas>
-            </div>
-
-            <!-- Informasi Tambahan -->
-            <div class="data-panel">
-                <div class="panel-header">
-                    <h3>Informasi Tambahan</h3>
-                    <span class="panel-sub">Statistik keuangan</span>
-                </div>
-                <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                    <div><span class="stat-label">Rata-rata transaksi</span><span class="stat-value" id="avgTransaction" style="font-size: 18px;">Rp 0</span></div>
-                    <div><span class="stat-label">Margin Laba Bersih</span><span class="stat-value" id="marginProfit" style="font-size: 18px;">0%</span></div>
-                    <div><span class="stat-label">Total Transaksi</span><span class="stat-value" id="totalTransaksi" style="font-size: 18px;">0</span></div>
-                </div>
-            </div>
+            <div class="data-panel"><div class="panel-header"><h3>Rincian Biaya Operasional</h3><span class="panel-sub">Periode berjalan</span></div><div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px;"><div><label style="display:block; margin-bottom:6px;">Biaya Iklan</label><input type="number" id="biayaIklan" class="search-input" placeholder="0"></div><div><label style="display:block; margin-bottom:6px;">Fee Marketplace</label><input type="number" id="feeMarketplace" class="search-input" placeholder="0"></div><div><label style="display:block; margin-bottom:6px;">Biaya Pengiriman</label><input type="number" id="ongkir" class="search-input" placeholder="0"></div><div><label style="display:block; margin-bottom:6px;">Biaya Lainnya</label><input type="number" id="lainLain" class="search-input" placeholder="0"></div></div><button id="simpanBiaya" class="btn-primary">Simpan Perubahan</button></div>
+            <div class="data-panel"><div class="panel-header"><h3>Ringkasan Biaya</h3><span class="panel-sub">Total pengeluaran</span></div><div class="table-responsive"><table class="clean-table"><tbody><tr><td style="width:70%;">Biaya Iklan</td><td id="summaryIklan">Rp 0</td></tr><tr><td>Fee Marketplace</td><td id="summaryFee">Rp 0</td></tr><tr><td>Biaya Pengiriman</td><td id="summaryOngkir">Rp 0</td></tr><tr><td>Biaya Lainnya</td><td id="summaryLain">Rp 0</td></tr><tr style="background:#f8f9fa; font-weight:bold;"><td>Total</td><td id="summaryTotal">Rp 0</td></tr></tbody></table></div></div>
+            <div class="chart-panel"><div class="panel-header"><h3>Visualisasi Laba</h3><span class="panel-sub">Pendapatan vs Biaya</span></div><canvas id="profitChart" height="120"></canvas></div>
+            <div class="data-panel"><div class="panel-header"><h3>Informasi Tambahan</h3><span class="panel-sub">Statistik keuangan</span></div><div class="stat-grid" style="grid-template-columns:repeat(3,1fr); gap:16px;"><div><span class="stat-label">Rata-rata transaksi</span><span class="stat-value" id="avgTransaction" style="font-size:18px;">Rp 0</span></div><div><span class="stat-label">Margin Laba Bersih</span><span class="stat-value" id="marginProfit" style="font-size:18px;">0%</span></div><div><span class="stat-label">Total Transaksi</span><span class="stat-value" id="totalTransaksi" style="font-size:18px;">0</span></div></div></div>
         </main>
     </div>
     <script src="script.js"></script>
