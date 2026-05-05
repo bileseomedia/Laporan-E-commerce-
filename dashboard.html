@@ -6,6 +6,7 @@
     <title>Dashboard - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="app-container">
@@ -23,27 +24,27 @@
             </nav>
             <div class="sidebar-footer">
                 <span>Administrator</span>
-                <a href="login.html" class="logout">Keluar</a>
+                <a href="login.html" class="logout" onclick="localStorage.clear()">Keluar</a>
             </div>
         </aside>
 
         <main class="main-content">
-            <header class="top-bar">
+            <div class="top-bar">
                 <div>
-                    <h1>Ringkasan Bisnis</h1>
-                    <p class="subtitle">Laporan real-time semua marketplace</p>
+                    <h1>Dashboard Monitoring</h1>
+                    <p class="subtitle">Ringkasan performa bisnis real-time</p>
                 </div>
                 <div class="date-badge" id="currentDate"></div>
-            </header>
+            </div>
 
-            <!-- Stat Cards - Professional -->
+            <!-- Stat Cards -->
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-icon green-bg">💰</div>
                     <div class="stat-details">
                         <span class="stat-label">Omzet Hari Ini</span>
                         <span class="stat-value" id="omzetHariIni">Rp 0</span>
-                        <span class="stat-trend" id="trendHariIni">0% dari kemarin</span>
+                        <span class="stat-trend" id="trendHariIni">-</span>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -72,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- Charts Section -->
+            <!-- Charts -->
             <div class="charts-wrapper">
                 <div class="chart-panel">
                     <div class="panel-header">
@@ -90,34 +91,38 @@
                 </div>
             </div>
 
-            <!-- Performance Comparison -->
-            <div class="comparison-panel">
-                <div class="comparison-item">
-                    <span class="comparison-label">Perbandingan Omzet</span>
-                    <div class="comparison-numbers">
-                        <div>
-                            <span class="small-label">Hari Ini</span>
-                            <span class="number" id="compHariIni">Rp 0</span>
+            <!-- Comparison & Target -->
+            <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-details">
+                        <span class="stat-label">Perbandingan Omzet</span>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                            <div>
+                                <span style="font-size: 11px; color: #6c757d;">Hari Ini</span>
+                                <span class="stat-value" id="compHariIni" style="font-size: 20px;">Rp 0</span>
+                            </div>
+                            <div style="color: #adb5bd;">VS</div>
+                            <div>
+                                <span style="font-size: 11px; color: #6c757d;">Kemarin</span>
+                                <span class="stat-value" id="compKemarin" style="font-size: 20px;">Rp 0</span>
+                            </div>
                         </div>
-                        <div class="vs-divider">VS</div>
-                        <div>
-                            <span class="small-label">Kemarin</span>
-                            <span class="number" id="compKemarin">Rp 0</span>
-                        </div>
+                        <div class="stat-trend" id="trendStatus" style="margin-top: 8px; text-align: center;">0%</div>
                     </div>
-                    <div class="trend-indicator" id="trendStatus">-</div>
                 </div>
-                <div class="comparison-item">
-                    <span class="comparison-label">Target Bulanan</span>
-                    <div class="target-progress">
-                        <div class="target-labels">
-                            <span>Target: <strong id="targetNilai">Rp 0</strong></span>
-                            <span>Realisasi: <strong id="realisasiNilai">Rp 0</strong></span>
+                <div class="stat-card">
+                    <div class="stat-details">
+                        <span class="stat-label">Target Bulanan</span>
+                        <div style="margin: 12px 0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>Target: <strong id="targetNilai">Rp 0</strong></span>
+                                <span>Realisasi: <strong id="realisasiNilai">Rp 0</strong></span>
+                            </div>
+                            <div class="progress-bar" style="margin: 10px 0;">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="target-percent" id="targetPercent" style="text-align: right; font-size: 13px; font-weight: 600;">0% tercapai</div>
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <div class="target-percentage" id="targetPercent">0%</div>
                     </div>
                 </div>
             </div>
@@ -128,66 +133,36 @@
                     <h3>Ringkasan per Marketplace</h3>
                     <span class="panel-sub">detail penjualan</span>
                 </div>
-                <table class="clean-table">
-                    <thead>
-                        <tr>
-                            <th>Marketplace</th>
-                            <th>Omzet</th>
-                            <th>Jumlah Order</th>
-                            <th>Unit Terjual</th>
-                            <th>Kontribusi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="marketplace-shopee">Shopee</td>
-                            <td id="mpShopeeOmzet">Rp 0</td>
-                            <td id="mpShopeeOrder">0</td>
-                            <td id="mpShopeeProduk">0</td>
-                            <td id="mpShopeePersen">0%</td>
-                        </tr>
-                        <tr>
-                            <td class="marketplace-tokopedia">Tokopedia</td>
-                            <td id="mpTokopediaOmzet">Rp 0</td>
-                            <td id="mpTokopediaOrder">0</td>
-                            <td id="mpTokopediaProduk">0</td>
-                            <td id="mpTokopediaPersen">0%</td>
-                        </tr>
-                        <tr>
-                            <td class="marketplace-tiktok">TikTok Shop</td>
-                            <td id="mpTiktokOmzet">Rp 0</td>
-                            <td id="mpTiktokOrder">0</td>
-                            <td id="mpTiktokProduk">0</td>
-                            <td id="mpTiktokPersen">0%</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr class="total-row">
-                            <td>Total</td>
-                            <td id="totalOmzet">Rp 0</td>
-                            <td id="totalOrderCount">0</td>
-                            <td id="totalProdukCount">0</td>
-                            <td>100%</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="clean-table">
+                        <thead>
+                            <tr><th>Marketplace</th><th>Omzet</th><th>Order</th><th>Unit Terjual</th><th>Kontribusi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="marketplace-shopee" style="color:#ee4d2d; font-weight:500;">Shopee</td><td id="mpShopeeOmzet">Rp 0</td><td id="mpShopeeOrder">0</td><td id="mpShopeeProduk">0</td><td id="mpShopeePersen">0%</td></tr>
+                            <tr><td class="marketplace-tokopedia" style="color:#42b549; font-weight:500;">Tokopedia</td><td id="mpTokopediaOmzet">Rp 0</td><td id="mpTokopediaOrder">0</td><td id="mpTokopediaProduk">0</td><td id="mpTokopediaPersen">0%</td></tr>
+                            <tr><td class="marketplace-tiktok" style="color:#010101; font-weight:500;">TikTok Shop</td><td id="mpTiktokOmzet">Rp 0</td><td id="mpTiktokOrder">0</td><td id="mpTiktokProduk">0</td><td id="mpTiktokPersen">0%</td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f8f9fa; font-weight:bold;"><td>Total</td><td id="totalOmzet">Rp 0</td><td id="totalOrderCount">0</td><td id="totalProdukCount">0</td><td>100%</td></tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
 
-            <!-- Two Column Bottom -->
-            <div class="bottom-grid">
+            <!-- Top Products & Alert Stok -->
+            <div class="charts-wrapper">
                 <div class="data-panel">
                     <div class="panel-header">
                         <h3>Produk Terlaris</h3>
                         <span class="panel-sub">5 produk dengan omzet tertinggi</span>
                     </div>
-                    <table class="clean-table">
-                        <thead>
-                            <tr><th>Nama Produk</th><th>Unit Terjual</th><th>Omzet</th></tr>
-                        </thead>
-                        <tbody id="topProdukList">
-                            <tr><td colspan="3" class="text-center">Belum ada data</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="clean-table">
+                            <thead><tr><th>Nama Produk</th><th>Unit Terjual</th><th>Omzet</th></tr></thead>
+                            <tbody id="topProdukList"><tr><td colspan="3" class="text-center">Belum ada data</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="data-panel alert-panel">
                     <div class="panel-header">
