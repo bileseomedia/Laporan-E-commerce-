@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Penjualan - Cylla.store</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="app-container">
@@ -27,13 +28,13 @@
         </aside>
 
         <main class="main-content">
-            <header class="top-bar">
+            <div class="top-bar">
                 <div>
                     <h1>Data Penjualan</h1>
                     <p class="subtitle">Riwayat transaksi semua marketplace</p>
                 </div>
                 <div class="date-badge" id="currentDate"></div>
-            </header>
+            </div>
 
             <div class="filter-bar">
                 <input type="text" id="searchInput" placeholder="Cari produk atau marketplace..." class="search-input">
@@ -55,19 +56,10 @@
                 <div class="table-responsive">
                     <table class="clean-table">
                         <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Marketplace</th>
-                                <th>Nama Produk</th>
-                                <th>Jumlah</th>
-                                <th>Harga</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
+                            <tr><th>Tanggal</th><th>Marketplace</th><th>Nama Produk</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
                         </thead>
                         <tbody id="penjualanBody">
-                            <tr><td colspan="8" class="text-center">Belum ada data</td></tr>
+                            <tr><td colspan="8" class="text-center">Belum ada数据</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -75,6 +67,7 @@
         </main>
     </div>
 
+    <!-- Modal Tambah Penjualan -->
     <div id="modalTambah" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -84,31 +77,19 @@
             <form id="formPenjualan">
                 <label>Tanggal</label>
                 <input type="date" id="tgl" required>
-                
                 <label>Marketplace</label>
-                <select id="mp" required>
-                    <option>Shopee</option>
-                    <option>Tokopedia</option>
-                    <option>TikTok Shop</option>
-                </select>
-                
+                <select id="mp" required><option>Shopee</option><option>Tokopedia</option><option>TikTok Shop</option></select>
                 <label>Nama Produk</label>
                 <input type="text" id="produk" required placeholder="Nama produk">
-                
                 <label>Jumlah</label>
                 <input type="number" id="jumlah" value="0" required>
-                
                 <label>Harga (per item)</label>
                 <input type="number" id="harga" value="0" required>
-                
+                <label>HPP (per item)</label>
+                <input type="number" id="hpp" value="0" placeholder="Harga Pokok Penjualan">
                 <label>Status</label>
-                <select id="status">
-                    <option>Selesai</option>
-                    <option>Diproses</option>
-                    <option>Dibatalkan</option>
-                </select>
-                
-                <button type="submit" class="btn-primary">Simpan</button>
+                <select id="status"><option>Selesai</option><option>Diproses</option><option>Dibatalkan</option></select>
+                <button type="submit" class="btn-primary" style="margin-top: 20px;">Simpan</button>
             </form>
         </div>
     </div>
