@@ -52,8 +52,10 @@ async function loadAllData() {
             .select('*')
             .order('tanggal', { ascending: false });
         if (err1) console.error("Error penjualan:", err1);
-        else if (penjualan) penjualanData = penjualan;
-        console.log("Penjualan:", penjualanData.length);
+        else if (penjualan) {
+            penjualanData = penjualan;
+            console.log("Penjualan loaded:", penjualanData.length);
+        }
         
         // Load stok
         const { data: stok, error: err2 } = await supabase
@@ -61,16 +63,20 @@ async function loadAllData() {
             .select('*')
             .order('produk');
         if (err2) console.error("Error stok:", err2);
-        else if (stok) stokData = stok;
-        console.log("Stok:", stokData.length);
+        else if (stok) {
+            stokData = stok;
+            console.log("Stok loaded:", stokData.length);
+        }
         
         // Load biaya
         const { data: biaya, error: err3 } = await supabase
             .from('biaya_operasional')
             .select('*');
         if (err3) console.error("Error biaya:", err3);
-        else if (biaya) biayaData = biaya;
-        console.log("Biaya:", biayaData.length);
+        else if (biaya) {
+            biayaData = biaya;
+            console.log("Biaya loaded:", biayaData.length);
+        }
         
     } catch (error) {
         console.error("Error:", error);
@@ -84,7 +90,7 @@ async function loadAllData() {
     renderStrategi();
     applyViewerRestrictions();
     
-    console.log("✅ Data loaded and rendered");
+    console.log("✅ All data loaded and rendered");
 }
 
 // ========== FUNGSI BANTU ==========
@@ -211,7 +217,18 @@ function renderPenjualan() {
     const tbody = document.getElementById('penjualanBody');
     if (!tbody) return;
     if (penjualanData.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada data penjualan</td></tr>'; return; }
-    tbody.innerHTML = penjualanData.map(item => `<tr><td>${item.tanggal}</td><td>${item.marketplace}</td><td style="font-weight:500;">${item.produk}</td><td>${item.jumlah}</td><td>Rp ${item.harga_jual.toLocaleString()}</td><td>Rp ${(item.jumlah * item.harga_jual).toLocaleString()}</td><td>${item.status}</td><td>${isAdmin() ? `<button onclick="hapusPenjualan('${item.id}')" class="btn-delete">Hapus</button>` : ''}</td>`).join('');
+    tbody.innerHTML = penjualanData.map(item => `
+        <tr>
+            <td>${item.tanggal}</td>
+            <td>${item.marketplace}</td>
+            <td style="font-weight:500;">${item.produk}</td>
+            <td>${item.jumlah}</td>
+            <td>Rp ${item.harga_jual.toLocaleString()}</td>
+            <td>Rp ${(item.jumlah * item.harga_jual).toLocaleString()}</td>
+            <td>${item.status}</td>
+            <td>${isAdmin() ? `<button onclick="hapusPenjualan('${item.id}')" class="btn-delete">Hapus</button>` : ''}</td>
+        </tr>
+    `).join('');
 }
 
 window.hapusPenjualan = async function(id) {
@@ -224,10 +241,27 @@ function renderStok() {
     const tbody = document.getElementById('stokBody');
     if (!tbody) return;
     if (stokData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data stok</td></tr>'; return; }
-    tbody.innerHTML = stokData.map(item => { let sisa = (item.stok_awal||0)+(item.stok_masuk||0)-(item.stok_keluar||0); let status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman'); return `<tr><td style="font-weight:500;">${item.produk}</td><td>${item.stok_awal||0}</td><td>${item.stok_masuk||0}</td><td>${item.stok_keluar||0}</td><td><strong>${sisa}</strong></td><td>${status}</td></tr>`; }).join('');
-    let habis = stokData.filter(item => { let sisa = (item.stok_awal||0)+(item.stok_masuk||0)-(item.stok_keluar||0); return sisa <= 0; });
+    tbody.innerHTML = stokData.map(item => { 
+        let sisa = (item.stok_awal || 0) + (item.stok_masuk || 0) - (item.stok_keluar || 0); 
+        let status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman'); 
+        return `
+            <tr>
+                <td style="font-weight:500;">${item.produk}</td>
+                <td>${item.stok_awal || 0}</td>
+                <td>${item.stok_masuk || 0}</td>
+                <td>${item.stok_keluar || 0}</td>
+                <td><strong>${sisa}</strong></td>
+                <td>${status}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    let habis = stokData.filter(item => { let sisa = (item.stok_awal || 0) + (item.stok_masuk || 0) - (item.stok_keluar || 0); return sisa <= 0; });
     let habisBody = document.getElementById('habisBody');
-    if (habisBody) habisBody.innerHTML = habis.length ? habis.map(item => `<tr><td>${item.produk}</td><td>0</td></tr>`).join('') : '<tr><td colspan="2" class="text-center">Tidak ada produk habis</td></tr>';
+    if (habisBody) {
+        if (habis.length === 0) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">Tidak ada produk habis</td></tr>';
+        else habisBody.innerHTML = habis.map(item => `<tr><td>${item.produk}</td><td>0</td></tr>`).join('');
+    }
 }
 
 // ========== RENDER KEUANGAN ==========
@@ -243,6 +277,22 @@ function renderKeuangan() {
     if (el('avgTransaction')) el('avgTransaction').innerText = `Rp ${avgTransaksi.toLocaleString()}`;
     if (el('marginProfit')) el('marginProfit').innerText = `${margin.toFixed(1)}%`;
     if (el('totalTransaksi')) el('totalTransaksi').innerText = totalTransaksi;
+    
+    let profitCanvas = document.getElementById('profitChart');
+    if (profitCanvas) { 
+        if (window.profitChart) window.profitChart.destroy(); 
+        window.profitChart = new Chart(profitCanvas.getContext('2d'), { 
+            type: 'bar', 
+            data: { 
+                labels: ['Pendapatan', 'Biaya', 'Laba Bersih'], 
+                datasets: [{ 
+                    data: [totalOmzet, totalBiaya, labaBersih], 
+                    backgroundColor: ['#1a1a2e', '#e03131', '#2e7d32'] 
+                }] 
+            }, 
+            options: { responsive: true, plugins: { legend: { display: false } } } 
+        }); 
+    }
 }
 
 // ========== RENDER STRATEGI ==========
@@ -279,7 +329,26 @@ if (document.getElementById('btnTambah')) {
     if (btn) btn.onclick = () => { if (isAdmin()) modal.style.display = 'block'; else alert('Hanya admin yang dapat menambah data'); };
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    document.getElementById('formPenjualan')?.addEventListener('submit', async (e) => { e.preventDefault(); if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } const newData = { tanggal: document.getElementById('tgl').value, marketplace: document.getElementById('mp').value, produk: document.getElementById('produk').value, jumlah: parseInt(document.getElementById('jumlah').value) || 0, harga_jual: parseInt(document.getElementById('harga').value) || 0, status: document.getElementById('status').value }; const { error } = await supabase.from('penjualan').insert([newData]); if (error) alert('Gagal: ' + error.message); else { await loadAllData(); modal.style.display = 'none'; e.target.reset(); alert('Data tersimpan!'); } });
+    document.getElementById('formPenjualan')?.addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } 
+        const newData = { 
+            tanggal: document.getElementById('tgl').value, 
+            marketplace: document.getElementById('mp').value, 
+            produk: document.getElementById('produk').value, 
+            jumlah: parseInt(document.getElementById('jumlah').value) || 0, 
+            harga_jual: parseInt(document.getElementById('harga').value) || 0, 
+            status: document.getElementById('status').value 
+        }; 
+        const { error } = await supabase.from('penjualan').insert([newData]); 
+        if (error) alert('Gagal: ' + error.message); 
+        else { 
+            await loadAllData(); 
+            modal.style.display = 'none'; 
+            e.target.reset(); 
+            alert('Data tersimpan!'); 
+        } 
+    });
 }
 
 // ========== TAMBAH DATA STOK ==========
@@ -288,17 +357,74 @@ if (document.getElementById('btnTambahStok')) {
     if (btn) btn.onclick = () => { if (isAdmin()) modal.style.display = 'block'; else alert('Hanya admin yang dapat menambah data'); };
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    document.getElementById('formStok')?.addEventListener('submit', async (e) => { e.preventDefault(); if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } const newData = { produk: document.getElementById('namaProduk').value, stok_awal: parseInt(document.getElementById('stokAwal').value) || 0, stok_masuk: parseInt(document.getElementById('stokMasuk').value) || 0, stok_keluar: 0 }; const { error } = await supabase.from('stok').insert([newData]); if (error) alert('Gagal: ' + error.message); else { await loadAllData(); modal.style.display = 'none'; e.target.reset(); alert('Stok tersimpan!'); } });
+    document.getElementById('formStok')?.addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        if (!isAdmin()) { alert('Hanya admin yang dapat menambah data'); return; } 
+        const newData = { 
+            produk: document.getElementById('namaProduk').value, 
+            stok_awal: parseInt(document.getElementById('stokAwal').value) || 0, 
+            stok_masuk: parseInt(document.getElementById('stokMasuk').value) || 0, 
+            stok_keluar: 0 
+        }; 
+        const { error } = await supabase.from('stok').insert([newData]); 
+        if (error) alert('Gagal: ' + error.message); 
+        else { 
+            await loadAllData(); 
+            modal.style.display = 'none'; 
+            e.target.reset(); 
+            alert('Stok tersimpan!'); 
+        } 
+    });
 }
 
 // ========== SIMPAN BIAYA ==========
 if (document.getElementById('simpanBiaya')) {
-    document.getElementById('simpanBiaya').addEventListener('click', async () => { if (!isAdmin()) { alert('Hanya admin yang dapat mengedit biaya'); return; } const biayaList = [{ jenis: 'Biaya Iklan', nominal: parseInt(document.getElementById('biayaIklan').value) || 0 }, { jenis: 'Fee Marketplace', nominal: parseInt(document.getElementById('feeMarketplace').value) || 0 }, { jenis: 'Biaya Pengiriman', nominal: parseInt(document.getElementById('ongkir').value) || 0 }, { jenis: 'Biaya Lainnya', nominal: parseInt(document.getElementById('lainLain').value) || 0 }]; for (let b of biayaList) { await supabase.from('biaya_operasional').insert([{ tanggal: new Date().toISOString().split('T')[0], jenis: b.jenis, nominal: b.nominal }]); } await loadAllData(); alert('Biaya tersimpan!'); });
+    document.getElementById('simpanBiaya').addEventListener('click', async () => { 
+        if (!isAdmin()) { alert('Hanya admin yang dapat mengedit biaya'); return; } 
+        const biayaList = [
+            { jenis: 'Biaya Iklan', nominal: parseInt(document.getElementById('biayaIklan').value) || 0 }, 
+            { jenis: 'Fee Marketplace', nominal: parseInt(document.getElementById('feeMarketplace').value) || 0 }, 
+            { jenis: 'Biaya Pengiriman', nominal: parseInt(document.getElementById('ongkir').value) || 0 }, 
+            { jenis: 'Biaya Lainnya', nominal: parseInt(document.getElementById('lainLain').value) || 0 }
+        ]; 
+        for (let b of biayaList) { 
+            await supabase.from('biaya_operasional').insert([{ 
+                tanggal: new Date().toISOString().split('T')[0], 
+                jenis: b.jenis, 
+                nominal: b.nominal 
+            }]); 
+        } 
+        await loadAllData(); 
+        alert('Biaya tersimpan!'); 
+    });
+}
+
+// ========== SIMPAN RENCANA TINDAKAN ==========
+if (document.getElementById('saveActionPlan')) {
+    document.getElementById('saveActionPlan').addEventListener('click', () => {
+        if (!isAdmin()) { alert('Hanya admin yang dapat mengedit rencana'); return; }
+        localStorage.setItem('actionPlan', document.getElementById('actionPlan').value);
+        const hint = document.getElementById('saveHint');
+        if (hint) { hint.innerText = 'Tersimpan!'; setTimeout(() => hint.innerText = '', 2000); }
+    });
 }
 
 // ========== EXPORT EXCEL ==========
 if (document.getElementById('btnExport')) {
-    document.getElementById('btnExport').addEventListener('click', () => { if (!isAdmin()) { alert('Hanya admin yang dapat export'); return; } if (!penjualanData.length) { alert('Tidak ada data'); return; } let csv = "Tanggal,Marketplace,Produk,Jumlah,Harga,Total,Status\n"; penjualanData.forEach(p => { csv += `"${p.tanggal}","${p.marketplace}","${p.produk}",${p.jumlah},${p.harga_jual},${p.jumlah * p.harga_jual},"${p.status}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `penjualan_${new Date().toISOString().slice(0,10)}.csv`; link.click(); alert(`Export ${penjualanData.length} data!`); });
+    document.getElementById('btnExport').addEventListener('click', () => { 
+        if (!isAdmin()) { alert('Hanya admin yang dapat export'); return; } 
+        if (!penjualanData.length) { alert('Tidak ada data'); return; } 
+        let csv = "Tanggal,Marketplace,Produk,Jumlah,Harga,Total,Status\n"; 
+        penjualanData.forEach(p => { 
+            csv += `"${p.tanggal}","${p.marketplace}","${p.produk}",${p.jumlah},${p.harga_jual},${p.jumlah * p.harga_jual},"${p.status}"\n`; 
+        }); 
+        const blob = new Blob([csv], { type: 'text/csv' }); 
+        const link = document.createElement('a'); 
+        link.href = URL.createObjectURL(blob); 
+        link.download = `penjualan_${new Date().toISOString().slice(0,10)}.csv`; 
+        link.click(); 
+        alert(`Export ${penjualanData.length} data!`); 
+    });
 }
 
 // ========== SEARCH & FILTER ==========
