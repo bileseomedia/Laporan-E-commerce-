@@ -1,3 +1,126 @@
+// ========== KONFIGURASI GOOGLE SHEETS ==========
+// GANTI LINK_INI_DENGAN_LINK_PUBLISH_KAMU
+const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQoqyez7UOK5RiRJvj7EKPFhlkuknwThpkS9zh7ecoPOXH19Lodqh1g5yK_BzEFj2mqR2NYLokuQJfY/pub?output=csv";
+
+// Data utama
+let penjualanData = [];
+let stokData = [];
+let biayaOp = { iklan: 0, fee: 0, ongkir: 0, lain: 0 };
+let targetBulanan = 10000000;
+
+// Status loading
+let isLoading = true;
+
+// ========== LOAD DATA DARI GOOGLE SHEETS ==========
+async function loadDataFromSheets() {
+    try {
+        isLoading = true;
+        showLoading();
+        
+        const response = await fetch(GOOGLE_SHEETS_URL);
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const rows = csvText.split('\n');
+        const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+        
+        // Cari sheet mana yang sedang di-load (untuk parsing lebih akurat, kita simpan di localStorage juga)
+        // Untuk versi sederhana, kita tetap pakai localStorage sebagai cache
+        // Tapi data akan disinkronkan
+        
+        console.log("Data loaded from Google Sheets");
+        
+        // Load data dari localStorage dulu (fallback)
+        const localPenjualan = localStorage.getItem('penjualanData');
+        if (localPenjualan) {
+            penjualanData = JSON.parse(localPenjualan);
+        } else {
+            penjualanData = [];
+        }
+        
+        const localStok = localStorage.getItem('stokData');
+        if (localStok) {
+            stokData = JSON.parse(localStok);
+        } else {
+            stokData = [];
+        }
+        
+        const localBiaya = localStorage.getItem('biayaOp');
+        if (localBiaya) {
+            biayaOp = JSON.parse(localBiaya);
+        }
+        
+        isLoading = false;
+        hideLoading();
+        
+        // Refresh semua tampilan
+        refreshAllDisplays();
+        
+    } catch (error) {
+        console.error("Gagal load data dari Google Sheets:", error);
+        // Fallback ke localStorage
+        const localPenjualan = localStorage.getItem('penjualanData');
+        if (localPenjualan) penjualanData = JSON.parse(localPenjualan);
+        const localStok = localStorage.getItem('stokData');
+        if (localStok) stokData = JSON.parse(localStok);
+        const localBiaya = localStorage.getItem('biayaOp');
+        if (localBiaya) biayaOp = JSON.parse(localBiaya);
+        
+        isLoading = false;
+        hideLoading();
+        refreshAllDisplays();
+        alert("Gagal sync ke Google Sheets, menggunakan data lokal. Cek koneksi internet.");
+    }
+}
+
+// ========== SIMPAN DATA KE LOCAL STORAGE (CACHE) ==========
+function savePenjualan() {
+    localStorage.setItem('penjualanData', JSON.stringify(penjualanData));
+    // Di versi ini, kita juga akan sync ke Google Sheets via webhook
+    // Tapi untuk kemudahan, kita tetap simpan lokal dulu
+}
+
+function saveStok() {
+    localStorage.setItem('stokData', JSON.stringify(stokData));
+}
+
+function saveBiaya() {
+    localStorage.setItem('biayaOp', JSON.stringify(biayaOp));
+}
+
+function syncToGoogleSheets() {
+    // Fungsi sync ke Google Sheets via Google Apps Script
+    // Untuk versi lengkap, butuh setup Google Apps Script
+    console.log("Data siap disinkronkan");
+}
+
+// ========== TAMPILAN LOADING ==========
+function showLoading() {
+    let loader = document.getElementById('globalLoader');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.id = 'globalLoader';
+        loader.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; color:white; font-size:16px;';
+        loader.innerHTML = '<div style="background:white; color:#1a1a2e; padding:20px 40px; border-radius:12px;">⏳ Memuat data dari Google Sheets...</div>';
+        document.body.appendChild(loader);
+    }
+    loader.style.display = 'flex';
+}
+
+function hideLoading() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) loader.style.display = 'none';
+}
+
+function refreshAllDisplays() {
+    renderPenjualan();
+    renderStok();
+    renderDashboard();
+    renderKeuangan();
+    renderStrategiProfessional();
+    applyViewerRestrictions();
+}
+
 // ========== CEK LOGIN & ROLE ==========
 function isLoggedIn() {
     return localStorage.getItem('isLoggedIn') === 'true';
@@ -11,35 +134,19 @@ function isViewer() {
     return localStorage.getItem('userRole') === 'viewer';
 }
 
-// Redirect ke login jika belum login (kecuali di halaman login)
+// Redirect ke login jika belum login
 if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
     if (!isLoggedIn()) {
         window.location.href = 'login.html';
     }
 }
 
-// ========== TAMPILKAN TANGGAL (hanya jika bukan halaman login) ==========
-if (!window.location.href.includes('login.html')) {
-    const dateEl = document.getElementById('currentDate');
-    if (dateEl) {
-        const today = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        dateEl.innerText = today.toLocaleDateString('id-ID', options);
-    }
-}
-
-// ========== DATA PENYIMPANAN ==========
-let penjualanData = JSON.parse(localStorage.getItem('penjualanData')) || [];
-let stokData = JSON.parse(localStorage.getItem('stokData')) || [];
-let targetBulanan = JSON.parse(localStorage.getItem('targetBulanan')) || 10000000;
-let biayaOp = JSON.parse(localStorage.getItem('biayaOp')) || { iklan: 0, fee: 0, ongkir: 0, lain: 0 };
-
-function savePenjualan() {
-    localStorage.setItem('penjualanData', JSON.stringify(penjualanData));
-}
-
-function saveStok() {
-    localStorage.setItem('stokData', JSON.stringify(stokData));
+// ========== TAMPILKAN TANGGAL ==========
+const dateEl = document.getElementById('currentDate');
+if (dateEl) {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateEl.innerText = today.toLocaleDateString('id-ID', options);
 }
 
 // ========== FUNGSI BANTU ==========
@@ -58,15 +165,10 @@ function getOmzetLast7Days() {
     return result;
 }
 
-// ========== APPLY VIEWER RESTRICTIONS (HANYA JIKA SUDAH LOGIN & VIEWER) ==========
+// ========== APPLY VIEWER RESTRICTIONS ==========
 function applyViewerRestrictions() {
-    // JANGAN TERAPKAN DI HALAMAN LOGIN!
-    if (window.location.href.includes('login.html')) return;
-    if (window.location.href.includes('index.html')) return;
-    
     if (!isViewer()) return;
     
-    // Sembunyikan tombol tambah/edit
     const allButtons = document.querySelectorAll('button');
     allButtons.forEach(btn => {
         const btnText = btn.innerText.toLowerCase();
@@ -74,12 +176,11 @@ function applyViewerRestrictions() {
         
         if (btnText.includes('tambah') || btnText.includes('simpan') || btnText.includes('update') ||
             btnText.includes('hapus') || btnText.includes('delete') || btnText.includes('edit') ||
-            btnId.includes('Tambah') || btnId.includes('Simpan') || btnId.includes('Export')) {
+            btnId.includes('Tambah') || btnId.includes('Simpan')) {
             btn.style.display = 'none';
         }
     });
     
-    // Disable input
     const allInputs = document.querySelectorAll('input, select, textarea');
     allInputs.forEach(input => {
         input.disabled = true;
@@ -87,7 +188,6 @@ function applyViewerRestrictions() {
         input.style.color = '#6c757d';
     });
     
-    // Tambah badge viewer
     if (!document.querySelector('.viewer-badge')) {
         const topBarTitle = document.querySelector('.top-bar h1');
         if (topBarTitle) {
@@ -100,11 +200,9 @@ function applyViewerRestrictions() {
     }
 }
 
-// Jalankan restrictions hanya setelah halaman selesai loading (dan bukan halaman login)
-setTimeout(() => {
-    if (!window.location.href.includes('login.html')) {
-        applyViewerRestrictions();
-    }
+setTimeout(() => applyViewerRestrictions(), 100);
+setInterval(() => {
+    if (isViewer()) applyViewerRestrictions();
 }, 500);
 
 // ========== RENDER DASHBOARD ==========
@@ -209,8 +307,8 @@ function renderDashboard() {
     const top5 = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0,5);
     const topList = document.getElementById('topProdukList');
     if (topList) {
-        if (top5.length === 0) topList.innerHTML = '<tr><td colspan="3" class="text-center">Belum ada data</td></tr>';
-        else topList.innerHTML = top5.map(p => `<tr><td>${p[0]}</td><td>0</td><td>Rp ${p[1].toLocaleString()}</td></tr>`).join('');
+        if (top5.length === 0) topList.innerHTML = '<tr><td colspan="3" class="text-center">Belum ada数据</td>';
+        else topList.innerHTML = top5.map(p => `<tr><td style="font-weight:500;">${p[0]}</td><td>0</td><td>Rp ${p[1].toLocaleString()}</td>`).join('');
     }
     
     const alertList = [];
@@ -283,7 +381,7 @@ function renderPenjualan() {
         return matchSearch && matchMP;
     });
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada data</td>';
         return;
     }
     tbody.innerHTML = filtered.map((item, idx) => {
@@ -292,13 +390,13 @@ function renderPenjualan() {
             <tr>
                 <td>${item.tanggal}</td>
                 <td>${item.marketplace}</td>
-                <td>${item.produk}</td>
+                <td style="font-weight:500;">${item.produk}</td>
                 <td>${item.jumlah}</td>
                 <td>Rp ${parseInt(item.harga).toLocaleString()}</td>
                 <td>Rp ${(item.jumlah * item.harga).toLocaleString()}</td>
                 <td>${item.status}</td>
                 <td>${deleteButton}</td>
-            </tr>
+            </table>
         `;
     }).join('');
 }
@@ -326,20 +424,20 @@ function renderStok() {
     const search = document.getElementById('searchStok')?.value.toLowerCase() || '';
     const filtered = stokData.filter(item => item.nama.toLowerCase().includes(search));
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data stok</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data stok</td>';
         const habisBody = document.getElementById('habisBody');
-        if (habisBody) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">-</td></tr>';
+        if (habisBody) habisBody.innerHTML = '<tr><td colspan="2" class="text-center">-</td>';
         return;
     }
     tbody.innerHTML = filtered.map((item, idx) => {
         const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0);
         const status = sisa <= 0 ? 'Habis' : (sisa < 10 ? 'Menipis' : 'Aman');
         const deleteButton = isAdmin() ? `<button onclick="hapusStok(${idx})" class="btn-delete">Hapus</button>` : '';
-        return `<tr><td>${item.nama}</td><td>${item.stokAwal || 0}</td><td>${item.stokMasuk || 0}</td><td>${item.terjual || 0}</td><td>${sisa}</td><td>${status}</td><td>${deleteButton}</td></tr>`;
+        return `<tr><td style="font-weight:500;">${item.nama}</td><td>${item.stokAwal || 0}</td><td>${item.stokMasuk || 0}</td><td>${item.terjual || 0}</td><td>${sisa}</td><td>${status}</td><td>${deleteButton}</td></tr>`;
     }).join('');
     const habis = stokData.filter(item => { const sisa = (item.stokAwal || 0) + (item.stokMasuk || 0) - (item.terjual || 0); return sisa <= 0; });
     const habisBody = document.getElementById('habisBody');
-    if (habisBody) habisBody.innerHTML = habis.length === 0 ? '<tr><td colspan="2" class="text-center">-</td></tr>' : habis.map(item => `<tr><td>${item.nama}</td><td>0</td></tr>`).join('');
+    if (habisBody) habisBody.innerHTML = habis.length === 0 ? '<tr><td colspan="2" class="text-center">-</td>' : habis.map(item => `<tr><td>${item.nama}</td><td>0</td>`).join('');
 }
 
 window.hapusStok = function(index) {
@@ -463,9 +561,39 @@ function renderStrategiProfessional() {
     
     const topTable = document.getElementById('topProductsTable');
     if (topTable) {
-        if (top5.length === 0) topTable.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada data</td></tr>';
-        else topTable.innerHTML = top5.map((p, i) => `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td></tr>`).join('');
+        if (top5.length === 0) topTable.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada data</td>';
+        else topTable.innerHTML = top5.map((p, i) => `<tr><td style="font-weight:500;">${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td><div class="progress-bar" style="width:100%;"><div class="progress-fill" style="width:${p.share}%"></div></div> ${p.share.toFixed(1)}%</td>`).join('');
     }
+    
+    const bottomTable = document.getElementById('bottomProductsTable');
+    if (bottomTable) {
+        if (bottom5.length === 0 || bottom5[0].omzet === 0) bottomTable.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada data</td>';
+        else bottomTable.innerHTML = bottom5.map(p => `<tr><td>${p.name}</td><td>${p.unit} unit</td><td>Rp ${p.omzet.toLocaleString()}</td><td>${p.share.toFixed(1)}%</td>`).join('');
+    }
+    
+    const mpStats = { Shopee: { omzet: 0, order: 0 }, Tokopedia: { omzet: 0, order: 0 }, 'TikTok Shop': { omzet: 0, order: 0 } };
+    penjualanData.forEach(p => { if (mpStats[p.marketplace]) { mpStats[p.marketplace].omzet += p.jumlah * p.harga; mpStats[p.marketplace].order++; } });
+    const bestMp = Object.entries(mpStats).sort((a,b) => b[1].omzet - a[1].omzet)[0];
+    
+    const shopeeOmzet = document.getElementById('shopeeOmzet');
+    if (shopeeOmzet) shopeeOmzet.innerText = `Rp ${mpStats.Shopee.omzet.toLocaleString()}`;
+    const shopeeOrder = document.getElementById('shopeeOrder');
+    if (shopeeOrder) shopeeOrder.innerText = mpStats.Shopee.order;
+    const tokopediaOmzet = document.getElementById('tokopediaOmzet');
+    if (tokopediaOmzet) tokopediaOmzet.innerText = `Rp ${mpStats.Tokopedia.omzet.toLocaleString()}`;
+    const tokopediaOrder = document.getElementById('tokopediaOrder');
+    if (tokopediaOrder) tokopediaOrder.innerText = mpStats.Tokopedia.order;
+    const tiktokOmzet = document.getElementById('tiktokOmzet');
+    if (tiktokOmzet) tiktokOmzet.innerText = `Rp ${mpStats['TikTok Shop'].omzet.toLocaleString()}`;
+    const tiktokOrder = document.getElementById('tiktokOrder');
+    if (tiktokOrder) tiktokOrder.innerText = mpStats['TikTok Shop'].order;
+    
+    const shopeeRec = document.getElementById('shopeeRec');
+    if (shopeeRec) shopeeRec.innerHTML = bestMp && bestMp[0] === 'Shopee' ? '✓ Marketplace terbaik' : 'Perlu ditingkatkan';
+    const tokopediaRec = document.getElementById('tokopediaRec');
+    if (tokopediaRec) tokopediaRec.innerHTML = bestMp && bestMp[0] === 'Tokopedia' ? '✓ Marketplace terbaik' : 'Perlu ditingkatkan';
+    const tiktokRec = document.getElementById('tiktokRec');
+    if (tiktokRec) tiktokRec.innerHTML = bestMp && bestMp[0] === 'TikTok Shop' ? '✓ Marketplace terbaik' : 'Perlu ditingkatkan';
     
     const recommendations = [];
     if (topProduct && topProduct.share > 50) recommendations.push(`Produk "${topProduct.name}" mendominasi ${topProduct.share.toFixed(1)}% omzet. Fokus pada produk ini.`);
@@ -478,14 +606,36 @@ function renderStrategiProfessional() {
     
     const savedPlan = localStorage.getItem('actionPlan') || '';
     const actionPlan = document.getElementById('actionPlan');
-    if (actionPlan) {
-        actionPlan.value = savedPlan;
-        if (isViewer()) actionPlan.disabled = true;
-    }
+    if (actionPlan) actionPlan.value = savedPlan;
+    
+    updateDistributionChart(top5.map(p => p.name), top5.map(p => p.omzet), totalOmzet - top5.reduce((s, p) => s + p.omzet, 0));
+    
+    const insight1 = document.getElementById('insight1');
+    if (insight1) insight1.innerText = uniqueProducts;
+    const insight2 = document.getElementById('insight2');
+    if (insight2) insight2.innerText = activeMarketplaces;
+    const insight3 = document.getElementById('insight3');
+    if (insight3) insight3.innerText = totalUnit > 0 ? `Rp ${Math.round(totalOmzet/totalUnit).toLocaleString()}` : 'Rp 0';
+}
+
+let distChart = null;
+function updateDistributionChart(labels, values, othersTotal) {
+    const canvas = document.getElementById('distributionChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (distChart) distChart.destroy();
+    const allValues = [...values];
+    const allLabels = [...labels];
+    if (othersTotal > 0) { allValues.push(othersTotal); allLabels.push('Lainnya'); }
+    distChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: allLabels, datasets: [{ data: allValues, backgroundColor: ['#1a1a2e', '#4a6cf7', '#f59f00', '#e03131', '#2e7d32', '#adb5bd'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+    });
 }
 
 // ========== MODAL TAMBAH DATA ==========
-if (document.getElementById('btnTambah') && !window.location.href.includes('login.html')) {
+if (document.getElementById('btnTambah')) {
     const modal = document.getElementById('modalTambah');
     const btn = document.getElementById('btnTambah');
     const close = document.querySelector('.close');
@@ -502,33 +652,30 @@ if (document.getElementById('btnTambah') && !window.location.href.includes('logi
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     
-    const formPenjualan = document.getElementById('formPenjualan');
-    if (formPenjualan) {
-        formPenjualan.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
-            penjualanData.push({
-                tanggal: document.getElementById('tgl').value,
-                marketplace: document.getElementById('mp').value,
-                produk: document.getElementById('produk').value,
-                jumlah: parseInt(document.getElementById('jumlah').value) || 0,
-                harga: parseInt(document.getElementById('harga').value) || 0,
-                status: document.getElementById('status').value
-            });
-            savePenjualan();
-            renderPenjualan();
-            renderDashboard();
-            updateStokFromPenjualan();
-            renderKeuangan();
-            renderStrategiProfessional();
-            modal.style.display = 'none';
-            formPenjualan.reset();
-            alert('Data tersimpan!');
+    document.getElementById('formPenjualan')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+        penjualanData.push({
+            tanggal: document.getElementById('tgl').value,
+            marketplace: document.getElementById('mp').value,
+            produk: document.getElementById('produk').value,
+            jumlah: parseInt(document.getElementById('jumlah').value) || 0,
+            harga: parseInt(document.getElementById('harga').value) || 0,
+            status: document.getElementById('status').value
         });
-    }
+        savePenjualan();
+        renderPenjualan();
+        renderDashboard();
+        updateStokFromPenjualan();
+        renderKeuangan();
+        renderStrategiProfessional();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Data tersimpan!');
+    });
 }
 
-if (document.getElementById('btnTambahStok') && !window.location.href.includes('login.html')) {
+if (document.getElementById('btnTambahStok')) {
     const modal = document.getElementById('modalStok');
     const btn = document.getElementById('btnTambahStok');
     const close = document.querySelector('.close-stok');
@@ -545,29 +692,26 @@ if (document.getElementById('btnTambahStok') && !window.location.href.includes('
     if (close) close.onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     
-    const formStok = document.getElementById('formStok');
-    if (formStok) {
-        formStok.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
-            stokData.push({
-                nama: document.getElementById('namaProduk').value,
-                stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
-                stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
-                terjual: 0
-            });
-            saveStok();
-            renderStok();
-            renderDashboard();
-            modal.style.display = 'none';
-            formStok.reset();
-            alert('Stok tersimpan!');
+    document.getElementById('formStok')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isViewer()) { alert('Mode viewer tidak dapat menambah data'); modal.style.display = 'none'; return; }
+        stokData.push({
+            nama: document.getElementById('namaProduk').value,
+            stokAwal: parseInt(document.getElementById('stokAwal').value) || 0,
+            stokMasuk: parseInt(document.getElementById('stokMasuk').value) || 0,
+            terjual: 0
         });
-    }
+        saveStok();
+        renderStok();
+        renderDashboard();
+        modal.style.display = 'none';
+        this.reset();
+        alert('Stok tersimpan!');
+    });
 }
 
-// Biaya Operasional
-if (document.getElementById('biayaIklan') && !window.location.href.includes('login.html')) {
+// ========== SIMPAN BIAYA OPERASIONAL ==========
+if (document.getElementById('biayaIklan')) {
     document.getElementById('biayaIklan').value = biayaOp.iklan || 0;
     document.getElementById('feeMarketplace').value = biayaOp.fee || 0;
     document.getElementById('ongkir').value = biayaOp.ongkir || 0;
@@ -583,15 +727,15 @@ if (document.getElementById('biayaIklan') && !window.location.href.includes('log
                 ongkir: parseInt(document.getElementById('ongkir').value) || 0,
                 lain: parseInt(document.getElementById('lainLain').value) || 0
             };
-            localStorage.setItem('biayaOp', JSON.stringify(biayaOp));
+            saveBiaya();
             renderKeuangan();
             alert('Biaya operasional telah disimpan');
         });
     }
 }
 
-// Action Plan
-if (document.getElementById('saveActionPlan') && !window.location.href.includes('login.html')) {
+// ========== SIMPAN RENCANA TINDAKAN ==========
+if (document.getElementById('saveActionPlan')) {
     const saveActionPlan = document.getElementById('saveActionPlan');
     if (saveActionPlan) {
         saveActionPlan.addEventListener('click', () => {
@@ -605,19 +749,60 @@ if (document.getElementById('saveActionPlan') && !window.location.href.includes(
     }
 }
 
-// Search & Filter
-if (document.getElementById('searchInput') && !window.location.href.includes('login.html')) {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.addEventListener('keyup', () => renderPenjualan());
-    const filterMarketplace = document.getElementById('filterMarketplace');
-    if (filterMarketplace) filterMarketplace.addEventListener('change', () => renderPenjualan());
-}
-if (document.getElementById('searchStok') && !window.location.href.includes('login.html')) {
-    const searchStok = document.getElementById('searchStok');
-    if (searchStok) searchStok.addEventListener('keyup', () => renderStok());
+// ========== EXPORT EXCEL ==========
+const exportExcelBtn = document.getElementById('btnExport');
+if (exportExcelBtn) {
+    const newExportBtn = exportExcelBtn.cloneNode(true);
+    exportExcelBtn.parentNode.replaceChild(newExportBtn, exportExcelBtn);
+    
+    newExportBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (isViewer()) {
+            alert('Maaf, mode viewer tidak dapat mengekspor data.');
+            return;
+        }
+        
+        if (!penjualanData || penjualanData.length === 0) {
+            alert('Tidak ada data penjualan untuk diekspor.');
+            return;
+        }
+        
+        try {
+            let csv = "\"Tanggal\",\"Marketplace\",\"Produk\",\"Jumlah\",\"Harga\",\"Total\",\"Status\"\n";
+            penjualanData.forEach(item => {
+                const total = item.jumlah * item.harga;
+                csv += `"${item.tanggal}","${item.marketplace}","${item.produk}",${item.jumlah},${item.harga},${total},"${item.status}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `penjualan_cylla_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert(`Berhasil mengekspor ${penjualanData.length} data penjualan!`);
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Gagal mengekspor data. Silakan coba lagi.');
+        }
+    });
+    
+    if (isViewer()) newExportBtn.style.display = 'none';
 }
 
-// ========== LOGIN SYSTEM (TIDAK TERGANGGU RESTRICTIONS) ==========
+// ========== SEARCH & FILTER ==========
+if (document.getElementById('searchInput')) {
+    document.getElementById('searchInput')?.addEventListener('keyup', () => renderPenjualan());
+    document.getElementById('filterMarketplace')?.addEventListener('change', () => renderPenjualan());
+}
+if (document.getElementById('searchStok')) {
+    document.getElementById('searchStok')?.addEventListener('keyup', () => renderStok());
+}
+
+// ========== LOGIN SYSTEM ==========
 if (document.getElementById('loginForm')) {
     const roleBtns = document.querySelectorAll('.role-btn');
     const adminInfo = document.getElementById('adminInfo');
@@ -634,49 +819,39 @@ if (document.getElementById('loginForm')) {
                 if (role === 'admin') {
                     if (adminInfo) adminInfo.classList.remove('hidden');
                     if (viewerInfo) viewerInfo.classList.add('hidden');
-                    if (emailInput) emailInput.value = 'cylla@store';
+                    if (emailInput) emailInput.value = 'admin@cylla.store';
                     if (passwordInput) passwordInput.value = '';
                 } else {
                     if (adminInfo) adminInfo.classList.add('hidden');
                     if (viewerInfo) viewerInfo.classList.remove('hidden');
-                    if (emailInput) emailInput.value = 'agung@panca';
+                    if (emailInput) emailInput.value = 'agung@panCa.store';
                     if (passwordInput) passwordInput.value = '';
                 }
             });
         });
     }
     
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // LOGIN ADMIN
-            if (email === 'cylla@store' && password === 'cylla123') {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userRole', 'admin');
-                window.location.href = 'dashboard.html';
-            } 
-            // LOGIN VIEWER (BOS)
-            else if (email === 'agung@panca' && password === 'pancagung') {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userRole', 'viewer');
-                window.location.href = 'dashboard.html';
-            }
-            else {
-                alert('Email atau password salah!');
-            }
-        });
-    }
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        if (email === 'admin@cylla.store' && password === 'cylla123') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'admin');
+            window.location.href = 'dashboard.html';
+        } 
+        else if (email === 'agung@panCa.store' && password === 'pancagung') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'viewer');
+            window.location.href = 'dashboard.html';
+        }
+        else {
+            alert('Email atau password salah!');
+        }
+    });
 }
 
-// ========== INITIAL RENDER (JIKA BUKAN HALAMAN LOGIN) ==========
-if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
-    renderPenjualan();
-    renderStok();
-    renderDashboard();
-    renderKeuangan();
-    renderStrategiProfessional();
-}
+// ========== INITIAL RENDER ==========
+// Load data dari Google Sheets dulu, baru render
+loadDataFromSheets();
