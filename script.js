@@ -12,26 +12,63 @@ let biayaData = [];
 let targetData = null;
 let currentUserRole = "";
 
-// ========== CEK LOGIN & ROLE ==========
-function isLoggedIn() {
-    return localStorage.getItem('isLoggedIn') === 'true';
-}
-
-function isAdmin() {
-    return localStorage.getItem('userRole') === 'admin';
-}
-
-function isViewer() {
-    return localStorage.getItem('userRole') === 'viewer';
-}
-
-if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
-    if (!isLoggedIn()) {
-        window.location.href = 'login.html';
-    } else {
-        currentUserRole = localStorage.getItem('userRole') || '';
-        loadAllData();
+// ========== LOGIN SYSTEM (FIXED - TOMBOL BISA DIPENCET) ==========
+if (document.getElementById('loginForm')) {
+    const roleBtns = document.querySelectorAll('.role-btn');
+    const adminInfo = document.getElementById('adminInfo');
+    const viewerInfo = document.getElementById('viewerInfo');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    // Tab switch (tanpa isi otomatis email)
+    if (roleBtns.length) {
+        roleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                roleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const role = btn.getAttribute('data-role');
+                if (role === 'admin') {
+                    if (adminInfo) adminInfo.classList.remove('hidden');
+                    if (viewerInfo) viewerInfo.classList.add('hidden');
+                    // HAPUS: emailInput.value = 'cylla@store'; (jangan diisi otomatis)
+                    if (passwordInput) passwordInput.value = '';
+                } else {
+                    if (adminInfo) adminInfo.classList.add('hidden');
+                    if (viewerInfo) viewerInfo.classList.remove('hidden');
+                    // HAPUS: emailInput.value = 'agung@panca'; (jangan diisi otomatis)
+                    if (passwordInput) passwordInput.value = '';
+                }
+            });
+        });
     }
+    
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // Validasi sederhana
+        if (!email || !password) {
+            alert('Email dan password harus diisi!');
+            return;
+        }
+        
+        // LOGIN ADMIN
+        if (email === 'cylla@store' && password === 'cylla123') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'admin');
+            window.location.href = 'dashboard.html';
+        } 
+        // LOGIN VIEWER (ATASAN)
+        else if (email === 'agung@panca' && password === 'pancagung') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', 'viewer');
+            window.location.href = 'dashboard.html';
+        }
+        else {
+            alert('Email atau password salah! Hubungi administrator untuk mendapatkan akses.');
+        }
+    });
 }
 
 // ========== TAMPILKAN TANGGAL ==========
